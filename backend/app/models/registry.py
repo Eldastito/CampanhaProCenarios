@@ -1,6 +1,7 @@
 from app.models.campanhapro_ingest import CampanhaProEvent, CampanhaProSnapshot
 from app.models.organization import Organization
 from app.models.political import (
+    PoliticalAgentProfile,
     PoliticalAuditLog,
     PoliticalComplianceAlert,
     PoliticalEvidenceSource,
@@ -14,6 +15,7 @@ __all__ = [
     "CampanhaProEvent",
     "CampanhaProSnapshot",
     "Organization",
+    "PoliticalAgentProfile",
     "PoliticalAuditLog",
     "PoliticalComplianceAlert",
     "PoliticalEvidenceSource",

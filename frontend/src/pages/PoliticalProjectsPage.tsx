@@ -125,12 +125,18 @@ function ProjectCard({ project }: { project: PoliticalProject }) {
           {project.known_opponents.length > 3 ? '…' : ''}
         </p>
       )}
-      <div className="mt-3 pt-3 border-t border-gray-100 flex gap-3">
+      <div className="mt-3 pt-3 border-t border-gray-100 flex flex-wrap gap-3">
         <Link
           to={`/political/projects/${project.id}/evidence`}
           className="text-xs text-brand-700 hover:underline"
         >
           📄 Evidências
+        </Link>
+        <Link
+          to={`/political/projects/${project.id}/agents`}
+          className="text-xs text-brand-700 hover:underline"
+        >
+          🧑‍⚖️ Bancada de Agentes
         </Link>
       </div>
     </div>

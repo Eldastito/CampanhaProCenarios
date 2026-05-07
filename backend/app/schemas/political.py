@@ -103,6 +103,38 @@ class PoliticalEvidenceSourceResponse(BaseModel):
 
 
 # ---------------------------------------------------------------------------
+# PoliticalAgentProfile (Fase 4 — bancada de agentes políticos)
+# ---------------------------------------------------------------------------
+
+
+class PoliticalAgentProfileResponse(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+
+    id: str
+    organization_id: str
+    project_id: str
+    agent_type: str
+    role: str
+    category: str
+    synthetic_name: str
+    biography: str
+    persona_prompt: str
+    biases_declared: list[str]
+    limitations: list[str]
+    confidence_level: str
+    source_node_ids: list[str]
+    source_evidence_ids: list[str]
+    created_at: datetime
+
+
+class PoliticalAgentSeedResult(BaseModel):
+    project_id: str
+    created_count: int
+    skipped_count: int
+    detail: str
+
+
+# ---------------------------------------------------------------------------
 # PoliticalComplianceAlert
 # ---------------------------------------------------------------------------
 

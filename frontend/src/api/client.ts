@@ -884,4 +884,57 @@ export const politicalGraphApi = {
     request<PoliticalGraphData>(`/political/projects/${projectId}/graph`),
 }
 
+// ---------------------------------------------------------------------------
+// Political Agents (Fase 4 — bancada de especialistas + personas geradas)
+// ---------------------------------------------------------------------------
+
+export type PoliticalAgentType = 'fixed_specialist' | 'generated'
+
+export interface PoliticalAgentProfile {
+  id: string
+  organization_id: string
+  project_id: string
+  agent_type: PoliticalAgentType
+  role: string
+  category: string
+  synthetic_name: string
+  biography: string
+  persona_prompt: string
+  biases_declared: string[]
+  limitations: string[]
+  confidence_level: string
+  source_node_ids: string[]
+  source_evidence_ids: string[]
+  created_at: string
+}
+
+export interface PoliticalAgentSeedResult {
+  project_id: string
+  created_count: number
+  skipped_count: number
+  detail: string
+}
+
+export const politicalAgentsApi = {
+  list: (projectId: string, agentType?: PoliticalAgentType) => {
+    const q = agentType ? `?agent_type=${agentType}` : ''
+    return request<PoliticalAgentProfile[]>(`/political/projects/${projectId}/agents${q}`)
+  },
+
+  get: (agentId: string) =>
+    request<PoliticalAgentProfile>(`/political/agents/${agentId}`),
+
+  seedSpecialists: (projectId: string) =>
+    request<PoliticalAgentSeedResult>(
+      `/political/projects/${projectId}/agents/seed-specialists`,
+      { method: 'POST' },
+    ),
+
+  generateFromGraph: (projectId: string) =>
+    request<PoliticalAgentSeedResult>(
+      `/political/projects/${projectId}/agents/generate-from-graph`,
+      { method: 'POST' },
+    ),
+}
+
 

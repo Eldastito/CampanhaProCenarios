@@ -16,6 +16,7 @@ import ResearchPage from './pages/ResearchPage'
 import ChatPage from './pages/ChatPage'
 import PoliticalProjectsPage from './pages/PoliticalProjectsPage'
 import EvidencePage from './pages/EvidencePage'
+import PoliticalAgentsPage from './pages/PoliticalAgentsPage'
 
 export default function App() {
   return (
@@ -31,6 +32,7 @@ export default function App() {
             <Route path="/" element={<DashboardPage />} />
             <Route path="/political/projects" element={<PoliticalProjectsPage />} />
             <Route path="/political/projects/:projectId/evidence" element={<EvidencePage />} />
+            <Route path="/political/projects/:projectId/agents" element={<PoliticalAgentsPage />} />
             <Route path="/scenarios/new" element={<CreateScenarioPage />} />
             <Route path="/scenarios/:id" element={<ScenarioDetailPage />} />
             <Route path="/compare" element={<ComparePage />} />

@@ -7,6 +7,7 @@ auditoria/alerta usados pelos guardrails (Fase 7).
 from sqlalchemy.orm import Session
 
 from app.models.political import (
+    PoliticalAgentProfile,
     PoliticalAuditLog,
     PoliticalComplianceAlert,
     PoliticalEvidenceSource,
@@ -117,6 +118,80 @@ class PoliticalComplianceRepository:
             .limit(limit)
             .all()
         )
+
+
+class PoliticalAgentRepository:
+    def __init__(self, db: Session) -> None:
+        self.db = db
+
+    def add(self, agent: PoliticalAgentProfile) -> PoliticalAgentProfile:
+        self.db.add(agent)
+        self.db.commit()
+        self.db.refresh(agent)
+        return agent
+
+    def add_bulk(self, agents: list[PoliticalAgentProfile]) -> list[PoliticalAgentProfile]:
+        if not agents:
+            return []
+        self.db.add_all(agents)
+        self.db.commit()
+        for a in agents:
+            self.db.refresh(a)
+        return agents
+
+    def get_by_id(self, agent_id: str) -> PoliticalAgentProfile | None:
+        return (
+            self.db.query(PoliticalAgentProfile)
+            .filter(PoliticalAgentProfile.id == agent_id)
+            .first()
+        )
+
+    def list_for_project(
+        self,
+        project_id: str,
+        agent_type: str | None = None,
+        limit: int = 200,
+        offset: int = 0,
+    ) -> list[PoliticalAgentProfile]:
+        query = self.db.query(PoliticalAgentProfile).filter(
+            PoliticalAgentProfile.project_id == project_id
+        )
+        if agent_type:
+            query = query.filter(PoliticalAgentProfile.agent_type == agent_type)
+        return (
+            query.order_by(
+                PoliticalAgentProfile.agent_type.asc(),
+                PoliticalAgentProfile.category.asc(),
+                PoliticalAgentProfile.created_at.asc(),
+            )
+            .offset(offset)
+            .limit(limit)
+            .all()
+        )
+
+    def categories_present(self, project_id: str, agent_type: str) -> set[str]:
+        rows = (
+            self.db.query(PoliticalAgentProfile.category)
+            .filter(
+                PoliticalAgentProfile.project_id == project_id,
+                PoliticalAgentProfile.agent_type == agent_type,
+            )
+            .all()
+        )
+        return {r[0] for r in rows}
+
+    def delete_generated_for_project(self, project_id: str) -> int:
+        """Remove agentes do tipo 'generated' (mantém os fixos). Retorna nº removidos."""
+        result = (
+            self.db.query(PoliticalAgentProfile)
+            .filter(
+                PoliticalAgentProfile.project_id == project_id,
+                PoliticalAgentProfile.agent_type == "generated",
+            )
+            .delete(synchronize_session=False)
+        )
+        self.db.commit()
+        return result or 0
 
 
 class PoliticalAuditLogRepository:

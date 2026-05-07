@@ -167,3 +167,55 @@ class PoliticalAuditLog(Base):
     payload: Mapped[dict] = mapped_column(JSON, nullable=False, default=dict)
 
     created_at: Mapped[datetime] = mapped_column(DateTime, default=utc_now_naive, nullable=False)
+
+
+class PoliticalAgentProfile(Base):
+    """Perfil de agente político (Fase 4).
+
+    Dois sabores via ``agent_type``:
+    - ``fixed_specialist``: bancada estável de especialistas (jurídico,
+      fact-checking, mídia, território, etc.). Catálogo estático em
+      ``app.services.political_agents_catalog``.
+    - ``generated``: persona derivada de entidades do grafo
+      (eleitor, liderança, influenciador) — atrelada a source_node_ids
+      e source_evidence_ids para rastreabilidade.
+
+    O ``persona_prompt`` é o texto-base usado quando a UI conversar com
+    o agente (Fase 4 cont. / Fase 5). Vieses e limitações declarados
+    aparecem na UI antes de qualquer interação (PRD §RF-07 e §7).
+    """
+
+    __tablename__ = "political_agent_profiles"
+
+    id: Mapped[str] = mapped_column(String(64), primary_key=True)
+    organization_id: Mapped[str] = mapped_column(
+        ForeignKey("organizations.id"),
+        nullable=False,
+        index=True,
+    )
+    project_id: Mapped[str] = mapped_column(
+        ForeignKey("political_projects.id"),
+        nullable=False,
+        index=True,
+    )
+
+    agent_type: Mapped[str] = mapped_column(
+        String(32),
+        nullable=False,
+        index=True,
+        default="fixed_specialist",
+    )
+    role: Mapped[str] = mapped_column(String(150), nullable=False)
+    category: Mapped[str] = mapped_column(String(100), nullable=False, index=True)
+    synthetic_name: Mapped[str] = mapped_column(String(150), nullable=False)
+    biography: Mapped[str] = mapped_column(Text, nullable=False)
+    persona_prompt: Mapped[str] = mapped_column(Text, nullable=False)
+
+    biases_declared: Mapped[list] = mapped_column(JSON, nullable=False, default=list)
+    limitations: Mapped[list] = mapped_column(JSON, nullable=False, default=list)
+    confidence_level: Mapped[str] = mapped_column(String(20), nullable=False, default="medium")
+
+    source_node_ids: Mapped[list] = mapped_column(JSON, nullable=False, default=list)
+    source_evidence_ids: Mapped[list] = mapped_column(JSON, nullable=False, default=list)
+
+    created_at: Mapped[datetime] = mapped_column(DateTime, default=utc_now_naive, nullable=False)
