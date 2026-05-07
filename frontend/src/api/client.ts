@@ -751,3 +751,93 @@ export const politicalProjectsApi = {
     }),
 }
 
+// ---------------------------------------------------------------------------
+// Political Evidence (Fase 2 — ingestão de evidências)
+// ---------------------------------------------------------------------------
+
+export type ReliabilityLevel =
+  | 'official'
+  | 'press'
+  | 'registered_poll'
+  | 'public_base'
+  | 'internal'
+  | 'social'
+  | 'unverified'
+
+export interface PoliticalEvidenceSource {
+  id: string
+  organization_id: string
+  project_id: string
+  title: string
+  source_type: string
+  source_name: string | null
+  source_url: string | null
+  author: string | null
+  published_at: string | null
+  collected_at: string
+  reliability_level: ReliabilityLevel
+  content_hash: string | null
+  storage_uri: string | null
+  metadata_json: Record<string, unknown>
+  processing_status: string
+  processing_error: string | null
+  created_by: string | null
+  created_at: string
+}
+
+export interface ManualEvidencePayload {
+  title: string
+  source_type: 'manual' | 'link' | 'txt' | 'md'
+  raw_text?: string | null
+  source_name?: string | null
+  source_url?: string | null
+  author?: string | null
+  published_at?: string | null
+  reliability_override?: ReliabilityLevel | null
+  metadata?: Record<string, unknown>
+}
+
+export const evidenceApi = {
+  list: (projectId: string) =>
+    request<PoliticalEvidenceSource[]>(`/political/projects/${projectId}/evidence`),
+
+  get: (evidenceId: string) =>
+    request<PoliticalEvidenceSource>(`/political/evidence/${evidenceId}`),
+
+  createManual: (projectId: string, body: ManualEvidencePayload) =>
+    request<PoliticalEvidenceSource>(
+      `/political/projects/${projectId}/evidence/manual`,
+      { method: 'POST', body: JSON.stringify(body) },
+    ),
+
+  upload: async (
+    projectId: string,
+    file: File,
+    fields: { title: string; source_url?: string; author?: string; reliability_override?: ReliabilityLevel },
+  ) => {
+    const fd = new FormData()
+    fd.append('file', file)
+    fd.append('title', fields.title)
+    if (fields.source_url) fd.append('source_url', fields.source_url)
+    if (fields.author) fd.append('author', fields.author)
+    if (fields.reliability_override) fd.append('reliability_override', fields.reliability_override)
+
+    const res = await fetch(`${BASE}/political/projects/${projectId}/evidence`, {
+      method: 'POST',
+      headers: authHeaders(),
+      body: fd,
+    })
+    if (res.status === 401) {
+      localStorage.removeItem('fsl_token')
+      localStorage.removeItem('fsl_user')
+      window.location.href = '/login'
+      throw new Error('Unauthorized')
+    }
+    if (!res.ok) {
+      const body = (await res.json().catch(() => ({}))) as { detail?: string }
+      throw new Error(body.detail || `HTTP ${res.status}`)
+    }
+    return (await res.json()) as PoliticalEvidenceSource
+  },
+}
+

@@ -55,8 +55,28 @@ class PoliticalProjectResponse(PoliticalProjectBase):
 
 
 # ---------------------------------------------------------------------------
-# PoliticalEvidenceSource (somente leitura na Fase 1; criação chega na Fase 2)
+# PoliticalEvidenceSource — Fase 2: ingestão e listagem
 # ---------------------------------------------------------------------------
+
+
+class PoliticalEvidenceManualCreate(BaseModel):
+    """Cadastro de evidência via texto/link, sem upload de arquivo binário."""
+
+    title: str = Field(..., max_length=500)
+    source_type: str = Field(..., description="manual | link | txt | md")
+    raw_text: str | None = Field(default=None, description="Texto cru quando source_type='manual'.")
+    source_name: str | None = Field(default=None, max_length=255)
+    source_url: str | None = Field(default=None, max_length=1000)
+    author: str | None = Field(default=None, max_length=255)
+    published_at: datetime | None = None
+    reliability_override: str | None = Field(
+        default=None,
+        description=(
+            "Força um nível de confiabilidade (oficial/press/registered_poll/"
+            "public_base/internal/social/unverified). Se omitido, o serviço infere."
+        ),
+    )
+    metadata: dict[str, Any] = Field(default_factory=dict)
 
 
 class PoliticalEvidenceSourceResponse(BaseModel):

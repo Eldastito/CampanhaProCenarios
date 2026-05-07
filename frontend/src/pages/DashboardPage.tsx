@@ -429,8 +429,9 @@ export default function DashboardPage() {
                 </div>
                 <div className="space-y-1.5">
                   {[
+                    { to: '/political/projects', icon: '🗳', label: 'Projetos Eleitorais' },
                     { to: '/scenarios/new', icon: '＋', label: 'Novo Cenário' },
-                    { to: '/workspace',     icon: '🔬', label: 'Abrir Bancada Mirofish' },
+                    { to: '/workspace',     icon: '🧑‍⚖️', label: 'Bancada de Agentes' },
                     { to: '/research',      icon: '🔍', label: 'Pesquisar Candidato' },
                     { to: '/chat',          icon: '🤖', label: 'Consultar Agente IA' },
                     { to: '/predictions',   icon: '◎',  label: 'Nova Predição' },

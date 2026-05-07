@@ -199,7 +199,7 @@ export default function WorkspacePage() {
       {/* Header */}
       <div className="flex items-center justify-between mb-4">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">Bancada Mirofish</h1>
+          <h1 className="text-2xl font-bold text-gray-900">Bancada de Agentes</h1>
           <p className="text-gray-500 text-sm mt-1">Análise visual de cenários, opiniões e simulações.</p>
         </div>
         <div className="flex items-center gap-2">
@@ -610,7 +610,7 @@ function SplitMode({
 }
 
 // =====================================================================
-// Circular Progress Widget — MiroFish style
+// Circular Progress Widget — agent-bench style
 // =====================================================================
 
 function CircularProgress({ value, max, label, sublabel, acts, elapsed }: {
@@ -859,7 +859,7 @@ function ReportPanel(props: { graph: GraphData; simulation: SimulationView | nul
 }
 
 // =====================================================================
-// Workbench Mode — MiroFish-style dashboard with plazas
+// Workbench Mode — agent-bench-style dashboard with plazas
 // =====================================================================
 
 function WorkbenchMode({
@@ -913,7 +913,7 @@ function WorkbenchMode({
   return (
     <div className="space-y-5">
 
-      {/* MiroFish-style plaza row */}
+      {/* agent-bench-style plaza row */}
       <div className="grid grid-cols-2 gap-5">
         <CircularProgress
           value={voterNodes}
