@@ -6,8 +6,8 @@ import { FactorGroup } from '../components/FactorInput'
 import { useAuth } from '../contexts/AuthContext'
 import { getScenarioTypeDef } from '../scenarioCatalog'
 
-const EDUCATION_FACTORS = getScenarioTypeDef('education').factors
-const DEFAULT_FACTORS = Object.fromEntries(EDUCATION_FACTORS.map((f) => [f.key, 60]))
+const ELECTORAL_FACTORS = getScenarioTypeDef('electoral').factors
+const DEFAULT_FACTORS = Object.fromEntries(ELECTORAL_FACTORS.map((f) => [f.key, 60]))
 
 type PredictionType = 'acceptance' | 'evasion-risk'
 
@@ -155,7 +155,7 @@ export default function PredictionsPage() {
 
           {/* Factors */}
           <div className="bg-white rounded-xl border border-gray-200 p-5">
-            <FactorGroup title="Fatores" factors={EDUCATION_FACTORS} values={factors} onChange={setFactor} />
+            <FactorGroup title="Fatores" factors={ELECTORAL_FACTORS} values={factors} onChange={setFactor} />
           </div>
 
           <button

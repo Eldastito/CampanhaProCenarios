@@ -17,7 +17,7 @@ class SavePredictionRequest(BaseModel):
     organization_id: str
     name: str
     prediction_type: str
-    scenario_type: str = "education"
+    scenario_type: str = "electoral"
     factors: dict
     result_value: float
     confidence: float

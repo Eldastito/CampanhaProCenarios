@@ -10,13 +10,14 @@ interface NavItem {
 
 const NAV: NavItem[] = [
   { href: '/', label: 'Dashboard', icon: '⬛' },
-  { href: '/workspace', label: 'Bancada Mirofish', icon: '🔬' },
+  { href: '/political/projects', label: 'Projetos Eleitorais', icon: '🗳' },
   { href: '/scenarios/new', label: 'Novo Cenário', icon: '＋' },
-  { href: '/compare', label: 'Comparar', icon: '⇄' },
+  { href: '/compare', label: 'Comparar Cenários', icon: '⇄' },
   { href: '/predictions', label: 'Predições', icon: '◎' },
-  { href: '/saved-predictions', label: 'Pred. Salvas', icon: '💾' },
-  { href: '/graph', label: 'Grafos', icon: '🕸' },
-  { href: '/simulations/new', label: 'Simulações', icon: '▶' },
+  { href: '/saved-predictions', label: 'Predições Salvas', icon: '💾' },
+  { href: '/graph', label: 'Grafo Político', icon: '🕸' },
+  { href: '/workspace', label: 'Bancada de Agentes', icon: '🧑‍⚖️' },
+  { href: '/simulations/new', label: 'Simulação', icon: '▶' },
   { href: '/research', label: 'Pesquisa de Candidatos', icon: '🔍' },
   { href: '/chat', label: 'Chat com Agentes', icon: '🤖' },
 ]
@@ -39,7 +40,7 @@ export default function Layout({ children, wide = false }: { children: ReactNode
         <div className="px-6 py-5 border-b border-gray-700">
           <span className="text-lg font-bold tracking-wide">
             <span className="text-brand-500">CampanhaPro</span>{' '}
-            <span className="text-gray-300 font-normal text-sm">Scenario Lab</span>
+            <span className="text-gray-300 font-normal text-sm">Cenários</span>
           </span>
         </div>
 

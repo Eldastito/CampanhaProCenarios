@@ -16,39 +16,33 @@ logger = logging.getLogger(__name__)
 # Default ontologies per scenario type
 # ---------------------------------------------------------------------------
 
+_POLITICAL_ONTOLOGY: dict = {
+    "entity_types": [
+        "Candidato", "Adversário", "Partido", "Federação/Coligação",
+        "Coordenador de Campanha", "Eleitor", "Segmento Eleitoral",
+        "Território", "Município", "Bairro", "Zona Eleitoral",
+        "Liderança Comunitária", "Influenciador Digital",
+        "Mídia Local", "Mídia Nacional", "Pesquisa Eleitoral",
+        "Instituto de Pesquisa", "Proposta/Pauta", "Crise/Reputação",
+        "Aliança", "Evento de Campanha", "Rede Social", "Canal de Comunicação",
+        "Grupo Religioso", "Sindicato", "Associação Comercial",
+        "Movimento Social", "Órgão Público", "Justiça Eleitoral",
+        "Fonte de Informação",
+    ],
+    "relationship_types": [
+        "APOIA", "OPÕE", "COMPETE_COM", "ALIADO_DE", "CRITICA",
+        "INFLUENCIA", "MOBILIZA", "REJEITA", "DEFENDE_PAUTA", "ATACA_PAUTA",
+        "COBRE_NOTICIA", "PUBLICA", "REPERCUTE", "FINANCIA_CONFORME_DECLARADO",
+        "REPRESENTA", "ATUA_EM_TERRITORIO", "TEM_REJEICAO_EM", "TEM_FORCA_EM",
+        "TEM_RISCO_DE_CRISE", "RELACIONA_SE_COM", "DEPENDE_DE",
+        "FOI_CITADO_POR", "TEM_FONTE",
+    ],
+}
+
+# Domínio único: eleitoral. Aliases mantidos para compatibilidade temporária.
 _DEFAULT_ONTOLOGIES: dict[str, dict] = {
-    "political": {
-        "entity_types": [
-            "Candidato", "Partido", "Eleitor", "Mídia Tradicional", "Município",
-            "Aliado", "Adversário", "Apoiador", "Tribunal", "ONG",
-            "Empresa", "Influenciador Digital", "Grupo Religioso", "Sindicato", "Rede Social",
-        ],
-        "relationship_types": [
-            "APOIA", "OPÕE", "REPORTA_SOBRE", "COMPETE_COM", "ALIADO_DE",
-            "CRITICA", "REPRESENTA", "INFLUENCIA", "FINANCIA", "PROCESSA",
-            "DENUNCIA", "ENDOSSA", "REJEITA", "CONSOME", "PUBLICA",
-        ],
-    },
-    "education": {
-        "entity_types": [
-            "Escola", "Professor", "Aluno", "Gestor", "Secretaria",
-            "Plataforma", "Família", "Sindicato Docente", "MEC", "Pesquisador",
-        ],
-        "relationship_types": [
-            "ENSINA", "ESTUDA_EM", "GERENCIA", "ADOTA", "RESISTE_A",
-            "APOIA", "REPORTA_A", "FINANCIA", "REGULA", "PESQUISA",
-        ],
-    },
-    "business": {
-        "entity_types": [
-            "Empresa", "Produto", "Cliente", "Concorrente", "Fornecedor",
-            "Influencer", "Mercado", "Investidor", "Regulador", "Parceiro",
-        ],
-        "relationship_types": [
-            "VENDE", "COMPRA", "COMPETE_COM", "PROMOVE", "FORNECE_PARA",
-            "INFLUENCIA", "LIDERA", "INVESTE_EM", "REGULA", "PARCEIRO_DE",
-        ],
-    },
+    "electoral": _POLITICAL_ONTOLOGY,
+    "political": _POLITICAL_ONTOLOGY,
 }
 
 # ---------------------------------------------------------------------------

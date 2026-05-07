@@ -1,26 +1,39 @@
 from tests.conftest import api_key_headers as auth_headers  # noqa: F401
 
 
+# Fatores eleitorais (Fase 1) — chaves do scenario_catalog "electoral".
 def full_payload() -> dict:
     return {
         "organization_id": "org_demo_001",
-        "name": "Scenario Lab Demo",
-        "description": "Primeiro fluxo vertical testado",
+        "name": "Cenário Eleitoral Demo",
+        "description": "Primeiro fluxo vertical testado (domínio eleitoral)",
         "baseline_inputs": {
-            "training": 70,
-            "digital_maturity": 60,
-            "teacher_adoption": 75,
-            "infrastructure": 80,
-            "institutional_support": 65,
-            "engagement": 72,
+            "rejection": 30,
+            "vote_intention": 60,
+            "awareness": 70,
+            "territorial_strength": 65,
+            "alliances": 60,
+            "mobilization": 60,
+            "digital_sentiment": 55,
+            "local_agenda_fit": 60,
+            "reputation_risk": 35,
+            "operational_efficiency": 65,
+            "media_coverage": 50,
+            "declared_funding": 55,
         },
         "alternative_inputs": {
-            "training": 82,
-            "digital_maturity": 78,
-            "teacher_adoption": 84,
-            "infrastructure": 86,
-            "institutional_support": 79,
-            "engagement": 81,
+            "rejection": 25,
+            "vote_intention": 75,
+            "awareness": 80,
+            "territorial_strength": 75,
+            "alliances": 70,
+            "mobilization": 75,
+            "digital_sentiment": 70,
+            "local_agenda_fit": 75,
+            "reputation_risk": 30,
+            "operational_efficiency": 75,
+            "media_coverage": 65,
+            "declared_funding": 65,
         },
     }
 
@@ -28,13 +41,13 @@ def full_payload() -> dict:
 def sparse_payload() -> dict:
     return {
         "organization_id": "org_demo_001",
-        "name": "Scenario Sparse Demo",
-        "description": "Scenario com poucos fatores informados",
+        "name": "Cenário Eleitoral Esparso",
+        "description": "Cenário com poucos fatores informados",
         "baseline_inputs": {
-            "training": 70,
+            "rejection": 70,
         },
         "alternative_inputs": {
-            "training": 85,
+            "rejection": 85,
         },
     }
 
@@ -148,19 +161,24 @@ def test_sparse_input_returns_coverage_and_normalized_scores(client):
     assert results_response.status_code == 200
     body = results_response.json()
 
-    assert body["result"]["baseline_score"] == 14.0
-    assert body["result"]["alternative_score"] == 17.0
-    assert body["result"]["delta"] == 3.0
+    # rejection peso = 0.15; baseline=70 → 10.5; alt=85 → 12.75; delta=2.25
+    assert body["result"]["baseline_score"] == 10.5
+    assert body["result"]["alternative_score"] == 12.75
+    assert round(body["result"]["delta"], 2) == 2.25
 
+    # Normalizado pelo peso fornecido (0.15) → volta à escala 0-100
     assert body["normalized_result"]["baseline_score"] == 70.0
     assert body["normalized_result"]["alternative_score"] == 85.0
     assert body["normalized_result"]["delta"] == 15.0
 
-    assert body["input_quality"]["baseline_coverage_percent"] == 20.0
-    assert body["input_quality"]["alternative_coverage_percent"] == 20.0
-    assert "digital_maturity" in body["input_quality"]["baseline_missing_factors"]
+    # Cobertura por peso: 0.15 / 1.00 = 15%
+    assert body["input_quality"]["baseline_coverage_percent"] == 15.0
+    assert body["input_quality"]["alternative_coverage_percent"] == 15.0
+    # vote_intention é o segundo maior peso e está ausente
+    assert "vote_intention" in body["input_quality"]["baseline_missing_factors"]
     assert body["interpretation"]["confidence_level"] == "low"
-    assert len(body["factor_breakdown"]) == 6
+    # Domínio eleitoral tem 12 fatores
+    assert len(body["factor_breakdown"]) == 12
     assert len(body["recommendations"]) >= 1
     assert any(
         "missing factors" in warning.lower()

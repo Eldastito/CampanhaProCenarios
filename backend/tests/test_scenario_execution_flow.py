@@ -2,25 +2,38 @@ from tests.conftest import api_key_headers as auth_headers  # noqa: F401
 
 
 def create_scenario_payload() -> dict:
+    """Payload eleitoral cobrindo os 12 fatores do catálogo (Fase 1)."""
     return {
         "organization_id": "org_demo_001",
         "name": "Scenario Execution Integration",
-        "description": "Integration test for execution flow",
+        "description": "Integration test for execution flow (electoral)",
         "baseline_inputs": {
-            "training": 70,
-            "digital_maturity": 60,
-            "teacher_adoption": 65,
-            "infrastructure": 80,
-            "institutional_support": 75,
-            "engagement": 68,
+            "rejection": 35,
+            "vote_intention": 58,
+            "awareness": 65,
+            "territorial_strength": 60,
+            "alliances": 60,
+            "mobilization": 60,
+            "digital_sentiment": 55,
+            "local_agenda_fit": 55,
+            "reputation_risk": 40,
+            "operational_efficiency": 60,
+            "media_coverage": 50,
+            "declared_funding": 55,
         },
         "alternative_inputs": {
-            "training": 85,
-            "digital_maturity": 78,
-            "teacher_adoption": 82,
-            "infrastructure": 88,
-            "institutional_support": 84,
-            "engagement": 79,
+            "rejection": 30,
+            "vote_intention": 72,
+            "awareness": 75,
+            "territorial_strength": 70,
+            "alliances": 68,
+            "mobilization": 72,
+            "digital_sentiment": 68,
+            "local_agenda_fit": 70,
+            "reputation_risk": 35,
+            "operational_efficiency": 72,
+            "media_coverage": 62,
+            "declared_funding": 62,
         },
     }
 
@@ -59,7 +72,7 @@ def test_run_endpoint_reuses_fresh_result_without_creating_run(client):
     assert body["results"]["normalized_result"]["baseline_score"] is not None
     assert body["results"]["normalized_result"]["alternative_score"] is not None
     assert body["results"]["interpretation"]["confidence_level"] == "high"
-    assert len(body["results"]["factor_breakdown"]) == 6
+    assert len(body["results"]["factor_breakdown"]) == 12
     assert len(body["results"]["recommendations"]) >= 1
 
     runs_response = client.get(
@@ -121,7 +134,7 @@ def test_run_endpoint_executes_and_persists_run_history(client):
         "neutral",
         "negative",
     }
-    assert len(results_body["factor_breakdown"]) == 6
+    assert len(results_body["factor_breakdown"]) == 12
     assert len(results_body["recommendations"]) >= 1
 
     runs_response = client.get(

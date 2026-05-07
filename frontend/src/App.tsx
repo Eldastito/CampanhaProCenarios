@@ -14,6 +14,7 @@ import SimulationPage from './pages/SimulationPage'
 import WorkspacePage from './pages/WorkspacePage'
 import ResearchPage from './pages/ResearchPage'
 import ChatPage from './pages/ChatPage'
+import PoliticalProjectsPage from './pages/PoliticalProjectsPage'
 
 export default function App() {
   return (
@@ -27,6 +28,7 @@ export default function App() {
           {/* Protected */}
           <Route element={<ProtectedRoute />}>
             <Route path="/" element={<DashboardPage />} />
+            <Route path="/political/projects" element={<PoliticalProjectsPage />} />
             <Route path="/scenarios/new" element={<CreateScenarioPage />} />
             <Route path="/scenarios/:id" element={<ScenarioDetailPage />} />
             <Route path="/compare" element={<ComparePage />} />

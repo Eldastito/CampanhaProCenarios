@@ -18,7 +18,7 @@ class Scenario(Base):
     )
     name: Mapped[str] = mapped_column(String(255), nullable=False)
     description: Mapped[str | None] = mapped_column(Text, nullable=True)
-    scenario_type: Mapped[str] = mapped_column(String(32), nullable=False, default="education")
+    scenario_type: Mapped[str] = mapped_column(String(32), nullable=False, default="electoral")
 
     baseline_inputs: Mapped[dict] = mapped_column(JSON, nullable=False, default=dict)
     alternative_inputs: Mapped[dict] = mapped_column(JSON, nullable=False, default=dict)

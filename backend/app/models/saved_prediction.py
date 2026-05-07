@@ -14,7 +14,7 @@ class SavedPrediction(Base):
     organization_id: Mapped[str] = mapped_column(String(64), nullable=False, index=True)
     name: Mapped[str] = mapped_column(String(255), nullable=False)
     prediction_type: Mapped[str] = mapped_column(String(50), nullable=False)
-    scenario_type: Mapped[str] = mapped_column(String(32), nullable=False, default="education")
+    scenario_type: Mapped[str] = mapped_column(String(32), nullable=False, default="electoral")
     factors: Mapped[dict] = mapped_column(JSON, nullable=False, default=dict)
     result_value: Mapped[float] = mapped_column(Float, nullable=False)
     confidence: Mapped[float] = mapped_column(Float, nullable=False)

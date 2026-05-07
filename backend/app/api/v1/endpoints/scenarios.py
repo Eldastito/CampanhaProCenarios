@@ -16,7 +16,7 @@ class ScenarioCreateRequest(BaseModel):
     organization_id: str
     name: str
     description: str | None = None
-    scenario_type: str = "education"
+    scenario_type: str = "electoral"
     baseline_inputs: dict[str, Any] = Field(default_factory=dict)
     alternative_inputs: dict[str, Any] = Field(default_factory=dict)
 

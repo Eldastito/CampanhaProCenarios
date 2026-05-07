@@ -13,159 +13,104 @@ class ScenarioFactor:
 
 
 # ---------------------------------------------------------------------------
-# Education — CampanhaPro platform (escolas públicas/privadas)
+# Electoral factors — pesos sugeridos pelo PRD (somam 1.0)
 # ---------------------------------------------------------------------------
 
-EDUCATION_FACTORS: Final[tuple[ScenarioFactor, ...]] = (
+ELECTORAL_FACTORS: Final[tuple[ScenarioFactor, ...]] = (
     ScenarioFactor(
-        key="training",
-        label="Treinamento",
-        weight=0.20,
-        recommendation_hint="fortalecer planos de treinamento e ciclos de prática guiada",
-    ),
-    ScenarioFactor(
-        key="digital_maturity",
-        label="Maturidade Digital",
-        weight=0.20,
-        recommendation_hint="melhorar digitalização de processos, governança e prontidão operacional",
-    ),
-    ScenarioFactor(
-        key="teacher_adoption",
-        label="Adoção por Professores",
-        weight=0.20,
-        recommendation_hint="aumentar adesão com onboarding, suporte e incentivos",
-    ),
-    ScenarioFactor(
-        key="infrastructure",
-        label="Infraestrutura",
+        key="rejection",
+        label="Rejeição",
         weight=0.15,
-        recommendation_hint="reforçar dispositivos, conectividade e suporte técnico",
+        recommendation_hint="reduzir rejeição com escuta ativa, agenda positiva e correção de narrativa",
     ),
     ScenarioFactor(
-        key="institutional_support",
-        label="Suporte Institucional",
-        weight=0.15,
-        recommendation_hint="garantir patrocínio da liderança e governança de execução",
+        key="vote_intention",
+        label="Intenção de Voto / Apoio Inicial",
+        weight=0.14,
+        recommendation_hint="ampliar conversão de simpatizantes em apoiadores declarados",
     ),
     ScenarioFactor(
-        key="engagement",
-        label="Engajamento",
+        key="awareness",
+        label="Conhecimento do Candidato",
         weight=0.10,
-        recommendation_hint="melhorar comunicação e rotinas de engajamento dos stakeholders",
+        recommendation_hint="investir em presença orgânica e mídia para reduzir desconhecimento",
+    ),
+    ScenarioFactor(
+        key="territorial_strength",
+        label="Força Territorial",
+        weight=0.10,
+        recommendation_hint="reforçar lideranças locais e capilaridade por município/zona",
+    ),
+    ScenarioFactor(
+        key="alliances",
+        label="Força de Alianças",
+        weight=0.08,
+        recommendation_hint="formalizar coligações e diálogos com partidos compatíveis",
+    ),
+    ScenarioFactor(
+        key="mobilization",
+        label="Mobilização de Base",
+        weight=0.08,
+        recommendation_hint="ativar voluntariado, comitês e multiplicadores em território",
+    ),
+    ScenarioFactor(
+        key="digital_sentiment",
+        label="Sentimento Digital",
+        weight=0.08,
+        recommendation_hint="monitorar redes, responder rapidamente e qualificar engajamento",
+    ),
+    ScenarioFactor(
+        key="local_agenda_fit",
+        label="Aderência a Pautas Locais",
+        weight=0.07,
+        recommendation_hint="adaptar mensagem e propostas à realidade do território disputado",
+    ),
+    ScenarioFactor(
+        key="reputation_risk",
+        label="Risco Reputacional",
+        weight=0.07,
+        recommendation_hint="mapear vulnerabilidades, reforçar compliance e plano de gestão de crise",
+    ),
+    ScenarioFactor(
+        key="operational_efficiency",
+        label="Eficiência Operacional",
+        weight=0.06,
+        recommendation_hint="profissionalizar coordenação, agenda, jurídico e comunicação interna",
+    ),
+    ScenarioFactor(
+        key="media_coverage",
+        label="Cobertura de Mídia",
+        weight=0.04,
+        recommendation_hint="cultivar relacionamento com imprensa local e nacional com pautas próprias",
+    ),
+    ScenarioFactor(
+        key="declared_funding",
+        label="Capacidade Financeira Declarada",
+        weight=0.03,
+        recommendation_hint="diversificar arrecadação dentro dos limites e prazos do TSE",
     ),
 )
 
-# ---------------------------------------------------------------------------
-# Political / Elections — CampanhaPro platform
-# ---------------------------------------------------------------------------
-
-POLITICAL_FACTORS: Final[tuple[ScenarioFactor, ...]] = (
-    ScenarioFactor(
-        key="public_opinion",
-        label="Opinião Pública",
-        weight=0.25,
-        recommendation_hint="intensificar ações de campo e presença nas pesquisas de intenção de voto",
-    ),
-    ScenarioFactor(
-        key="legislative_support",
-        label="Apoio Legislativo",
-        weight=0.20,
-        recommendation_hint="ampliar coalizões e alianças no parlamento",
-    ),
-    ScenarioFactor(
-        key="media_sentiment",
-        label="Sentimento na Mídia",
-        weight=0.20,
-        recommendation_hint="melhorar estratégia de comunicação e assessoria de imprensa",
-    ),
-    ScenarioFactor(
-        key="party_unity",
-        label="Unidade Partidária",
-        weight=0.15,
-        recommendation_hint="fortalecer coesão interna e reduzir dissidências",
-    ),
-    ScenarioFactor(
-        key="economic_perception",
-        label="Percepção Econômica",
-        weight=0.10,
-        recommendation_hint="vincular agenda econômica a propostas concretas para o eleitorado",
-    ),
-    ScenarioFactor(
-        key="voter_turnout",
-        label="Comparecimento do Eleitorado",
-        weight=0.10,
-        recommendation_hint="investir em mobilização de base e transporte para zonas eleitorais",
-    ),
-)
 
 # ---------------------------------------------------------------------------
-# Business / Products — BackOffice / banco de dados da empresa
-# ---------------------------------------------------------------------------
-
-BUSINESS_FACTORS: Final[tuple[ScenarioFactor, ...]] = (
-    ScenarioFactor(
-        key="market_demand",
-        label="Demanda de Mercado",
-        weight=0.25,
-        recommendation_hint="analisar tendências e ajustar oferta ao volume demandado",
-    ),
-    ScenarioFactor(
-        key="target_audience_fit",
-        label="Alinhamento com Público-Alvo",
-        weight=0.20,
-        recommendation_hint="refinar persona e comunicação para o segmento prioritário",
-    ),
-    ScenarioFactor(
-        key="trend_alignment",
-        label="Alinhamento com Tendências",
-        weight=0.20,
-        recommendation_hint="monitorar tendências de moda/comportamento e antecipar mudanças",
-    ),
-    ScenarioFactor(
-        key="competitive_position",
-        label="Posição Competitiva",
-        weight=0.15,
-        recommendation_hint="diferenciar produto/serviço frente à concorrência direta",
-    ),
-    ScenarioFactor(
-        key="brand_sentiment",
-        label="Sentimento de Marca",
-        weight=0.10,
-        recommendation_hint="investir em branding, reputação e gestão de redes sociais",
-    ),
-    ScenarioFactor(
-        key="distribution_reach",
-        label="Alcance de Distribuição",
-        weight=0.10,
-        recommendation_hint="ampliar canais de venda e logística para novos mercados",
-    ),
-)
-
-# ---------------------------------------------------------------------------
-# Catalog registry
+# Catalog registry (domínio único: electoral)
 # ---------------------------------------------------------------------------
 
 SCENARIO_CATALOG: Final[dict[str, tuple[ScenarioFactor, ...]]] = {
-    "education": EDUCATION_FACTORS,
-    "political": POLITICAL_FACTORS,
-    "business": BUSINESS_FACTORS,
+    "electoral": ELECTORAL_FACTORS,
 }
 
 SCENARIO_TYPE_LABELS: Final[dict[str, str]] = {
-    "education": "Educação",
-    "political": "Político (Eleições)",
-    "business": "Empresas e Produtos",
+    "electoral": "Eleitoral",
 }
 
 SCENARIO_SOURCE_SYSTEMS: Final[dict[str, str]] = {
-    "education": "FORGE",
-    "political": "CAMPANHAPRO",
-    "business": "BACKOFFICE",
+    "electoral": "CAMPANHAPRO",
 }
 
 
 def get_factors_for_type(scenario_type: str) -> tuple[ScenarioFactor, ...]:
-    return SCENARIO_CATALOG.get(scenario_type, EDUCATION_FACTORS)
+    return SCENARIO_CATALOG.get(scenario_type, ELECTORAL_FACTORS)
 
 
 def get_factor_map_for_type(scenario_type: str) -> dict[str, ScenarioFactor]:
@@ -181,10 +126,10 @@ def get_total_weight_for_type(scenario_type: str) -> float:
 
 
 # ---------------------------------------------------------------------------
-# Backwards-compatibility aliases (used by prediction_service / tests)
+# Aliases used by prediction_service / tests (electoral é o único domínio)
 # ---------------------------------------------------------------------------
 
-SCENARIO_FACTORS = EDUCATION_FACTORS
-SCENARIO_FACTOR_MAP = get_factor_map_for_type("education")
-SCENARIO_FACTOR_KEYS = get_factor_keys_for_type("education")
-TOTAL_FACTOR_WEIGHT = get_total_weight_for_type("education")
+SCENARIO_FACTORS = ELECTORAL_FACTORS
+SCENARIO_FACTOR_MAP = get_factor_map_for_type("electoral")
+SCENARIO_FACTOR_KEYS = get_factor_keys_for_type("electoral")
+TOTAL_FACTOR_WEIGHT = get_total_weight_for_type("electoral")

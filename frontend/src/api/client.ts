@@ -670,3 +670,84 @@ export const chatApi = {
   deleteThread: (thread_id: string) =>
     request<{ deleted: string }>(`/chat/threads/${thread_id}`, { method: 'DELETE' }),
 }
+
+// ---------------------------------------------------------------------------
+// Political Projects (Fase 1 — projetos eleitorais)
+// ---------------------------------------------------------------------------
+
+export interface PoliticalProject {
+  id: string
+  organization_id: string
+  name: string
+  description: string | null
+  election_year: number
+  office: string
+  state: string | null
+  municipality: string | null
+  candidate_name: string
+  parties: string[]
+  known_opponents: string[]
+  objective: string | null
+  horizon_start: string | null
+  horizon_end: string | null
+  status: string
+  created_by: string | null
+  created_at: string
+  updated_at: string
+}
+
+export interface PoliticalProjectCreatePayload {
+  organization_id: string
+  name: string
+  description?: string | null
+  election_year: number
+  office: string
+  state?: string | null
+  municipality?: string | null
+  candidate_name: string
+  parties?: string[]
+  known_opponents?: string[]
+  objective?: string | null
+  horizon_start?: string | null
+  horizon_end?: string | null
+}
+
+export interface PoliticalProjectUpdatePayload {
+  name?: string | null
+  description?: string | null
+  state?: string | null
+  municipality?: string | null
+  parties?: string[] | null
+  known_opponents?: string[] | null
+  objective?: string | null
+  horizon_start?: string | null
+  horizon_end?: string | null
+  status?: string | null
+}
+
+export const politicalProjectsApi = {
+  list: () => request<PoliticalProject[]>('/political/projects'),
+
+  get: (id: string) => request<PoliticalProject>(`/political/projects/${id}`),
+
+  create: (body: PoliticalProjectCreatePayload) =>
+    request<PoliticalProject>('/political/projects', {
+      method: 'POST',
+      body: JSON.stringify(body),
+    }),
+
+  update: (id: string, body: PoliticalProjectUpdatePayload) =>
+    request<PoliticalProject>(`/political/projects/${id}`, {
+      method: 'PATCH',
+      body: JSON.stringify(body),
+    }),
+
+  remove: (id: string) =>
+    fetch(`${BASE}/political/projects/${id}`, {
+      method: 'DELETE',
+      headers: authHeaders(),
+    }).then((res) => {
+      if (!res.ok && res.status !== 204) throw new Error(`HTTP ${res.status}`)
+    }),
+}
+

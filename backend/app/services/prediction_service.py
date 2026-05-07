@@ -19,27 +19,37 @@ from app.repositories.campanhapro_ingest_repository import CampanhaProIngestRepo
 from app.repositories.prediction_repository import PredictionRepository
 
 # ---------------------------------------------------------------------------
-# Acceptance prediction
+# Candidacy strength prediction (substitui acceptance)
 # ---------------------------------------------------------------------------
-# Higher factor values → higher acceptance probability.
-_ACCEPTANCE_WEIGHTS: dict[str, float] = {
-    "training": 0.25,
-    "digital_maturity": 0.20,
-    "teacher_adoption": 0.25,
-    "institutional_support": 0.20,
-    "engagement": 0.10,
+# Higher factor values → higher candidacy strength.
+# Pesos do PRD eleitoral. Rejeição é o único fator invertido aqui (alta
+# rejeição reduz a força da candidatura) — invertemos na hora de pontuar.
+_CANDIDACY_STRENGTH_WEIGHTS: dict[str, float] = {
+    "vote_intention": 0.14,
+    "awareness": 0.10,
+    "territorial_strength": 0.10,
+    "alliances": 0.08,
+    "mobilization": 0.08,
+    "digital_sentiment": 0.08,
+    "local_agenda_fit": 0.07,
+    "operational_efficiency": 0.06,
+    "media_coverage": 0.04,
+    "declared_funding": 0.03,
 }
 
 # ---------------------------------------------------------------------------
-# Evasion-risk prediction
+# Rejection-risk prediction (substitui evasion-risk)
 # ---------------------------------------------------------------------------
-# Higher factor values → lower evasion risk  (score is inverted at the end).
-_EVASION_WEIGHTS: dict[str, float] = {
-    "engagement": 0.35,
-    "infrastructure": 0.25,
-    "institutional_support": 0.20,
-    "teacher_adoption": 0.20,
+# Mede o risco de rejeição/desgaste reputacional.
+# Aqui valores ALTOS de cada fator significam MAIS risco. O scoring NÃO inverte.
+_REJECTION_RISK_WEIGHTS: dict[str, float] = {
+    "rejection": 0.55,
+    "reputation_risk": 0.45,
 }
+
+# Aliases para retrocompatibilidade com código que ainda referencia os nomes antigos.
+_ACCEPTANCE_WEIGHTS = _CANDIDACY_STRENGTH_WEIGHTS
+_EVASION_WEIGHTS = _REJECTION_RISK_WEIGHTS
 
 _NO_DATA_VALUE = 0.50
 _NO_DATA_CONFIDENCE = 0.05
@@ -84,23 +94,25 @@ def _score_from_factors(
 
 
 def _interpret_acceptance(value: float) -> str:
+    """Interpretação de força da candidatura (acceptance == candidacy strength)."""
     if value >= 0.80:
-        return "High acceptance probability — strong organisational readiness detected."
+        return "Candidatura forte — fatores eleitorais favoráveis e bem distribuídos."
     if value >= 0.60:
-        return "Moderate acceptance probability — focus on weaker factors to improve."
+        return "Candidatura competitiva — atuar nos fatores mais fracos para consolidar."
     if value >= 0.40:
-        return "Low-moderate acceptance — significant gaps require attention."
-    return "Low acceptance probability — major organisational readiness gaps detected."
+        return "Candidatura intermediária — lacunas relevantes exigem plano de ação."
+    return "Candidatura frágil — gaps significativos em fatores eleitorais centrais."
 
 
 def _interpret_evasion(value: float) -> str:
+    """Interpretação de risco de rejeição (evasion == rejection risk)."""
     if value >= 0.60:
-        return "High evasion risk — urgent intervention required in low-scored areas."
+        return "Risco alto de rejeição — intervenção urgente em narrativa, reputação e mídia."
     if value >= 0.40:
-        return "Moderate evasion risk — targeted improvements can reduce dropout."
+        return "Risco moderado de rejeição — atuação direcionada pode mitigar desgaste."
     if value >= 0.20:
-        return "Low-moderate evasion risk — monitor engagement and infrastructure gaps."
-    return "Low evasion risk — organisation shows strong student retention indicators."
+        return "Risco baixo-moderado de rejeição — monitorar sentimento e crises potenciais."
+    return "Risco baixo de rejeição — campanha demonstra blindagem reputacional adequada."
 
 
 def _extract_factors_from_snapshot(snapshot_payload: dict) -> dict[str, float]:
@@ -199,8 +211,9 @@ class PredictionService:
                 ],
             )
         else:
+            # Para risco de rejeição, valores altos = mais risco. Sem inverter.
             value, confidence, explanation = _score_from_factors(
-                effective_factors, _EVASION_WEIGHTS, invert=True
+                effective_factors, _EVASION_WEIGHTS, invert=False
             )
             explanation.append(_interpret_evasion(value))
 

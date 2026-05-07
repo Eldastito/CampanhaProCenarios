@@ -72,7 +72,7 @@ class ScenarioService:
         return "low"
 
     def _calculate_score(
-        self, inputs: dict[str, Any] | None, scenario_type: str = "education"
+        self, inputs: dict[str, Any] | None, scenario_type: str = "electoral"
     ) -> tuple[float, str]:
         inputs = inputs or {}
         scenario_factors = get_factors_for_type(scenario_type)
@@ -92,7 +92,7 @@ class ScenarioService:
         return final_score, detail
 
     def _build_input_profile(
-        self, inputs: dict[str, Any] | None, scenario_type: str = "education"
+        self, inputs: dict[str, Any] | None, scenario_type: str = "electoral"
     ) -> dict:
         inputs = inputs or {}
         scenario_factors = get_factors_for_type(scenario_type)
@@ -156,7 +156,7 @@ class ScenarioService:
         self,
         baseline_inputs: dict[str, Any] | None,
         alternative_inputs: dict[str, Any] | None,
-        scenario_type: str = "education",
+        scenario_type: str = "electoral",
     ) -> list[dict]:
         baseline_inputs = baseline_inputs or {}
         alternative_inputs = alternative_inputs or {}
@@ -314,7 +314,7 @@ class ScenarioService:
         return unique[:4]
 
     def _build_analysis_bundle(self, scenario: Scenario) -> dict:
-        stype = getattr(scenario, "scenario_type", "education") or "education"
+        stype = getattr(scenario, "scenario_type", "electoral") or "electoral"
         baseline_profile = self._build_input_profile(scenario.baseline_inputs, stype)
         alternative_profile = self._build_input_profile(scenario.alternative_inputs, stype)
 
@@ -397,7 +397,7 @@ class ScenarioService:
         *,
         source_run_id: str | None,
     ) -> Scenario:
-        stype = getattr(scenario, "scenario_type", "education") or "education"
+        stype = getattr(scenario, "scenario_type", "electoral") or "electoral"
         baseline_score, baseline_detail = self._calculate_score(scenario.baseline_inputs, stype)
         alternative_score, alternative_detail = self._calculate_score(
             scenario.alternative_inputs, stype
@@ -455,7 +455,7 @@ class ScenarioService:
             "organization_id": scenario.organization_id,
             "name": scenario.name,
             "description": scenario.description,
-            "scenario_type": getattr(scenario, "scenario_type", "education") or "education",
+            "scenario_type": getattr(scenario, "scenario_type", "electoral") or "electoral",
             "status": scenario.status,
             "result_status": self._get_result_status(scenario),
             "baseline_score": scenario.baseline_score,
@@ -486,7 +486,7 @@ class ScenarioService:
         description: str | None = None,
         baseline_inputs: dict[str, Any] | None = None,
         alternative_inputs: dict[str, Any] | None = None,
-        scenario_type: str = "education",
+        scenario_type: str = "electoral",
     ) -> Scenario:
         organization = self.repository.get_organization_by_id(organization_id)
         if not organization:
