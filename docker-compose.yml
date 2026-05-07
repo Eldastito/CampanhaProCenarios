@@ -1,0 +1,80 @@
+services:
+  postgres:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_DB: forge_scenario_lab
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d forge_scenario_lab"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "6379:6379"
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+
+  api:
+    build:
+      context: ./backend
+    environment:
+      APP_NAME: FORGE Scenario Lab API
+      APP_ENV: development
+      APP_DEBUG: "true"
+      API_V1_PREFIX: /api/v1
+      # Allow requests from the frontend container and local dev
+      BACKEND_CORS_ORIGINS: "http://localhost:4000,http://localhost:4173,http://localhost:80,http://frontend"
+      POSTGRES_HOST: postgres
+      POSTGRES_PORT: "5432"
+      POSTGRES_DB: forge_scenario_lab
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      REDIS_URL: redis://redis:6379/0
+      # CHANGE THESE IN PRODUCTION
+      FORGE_INGEST_SHARED_SECRET: dev-forge-secret
+      INTERNAL_API_KEY: dev-internal-key
+      JWT_SECRET_KEY: dev-jwt-secret
+      # AI provider keys — read from .env file
+      OPENAI_API_KEY: ${OPENAI_API_KEY:-}
+      OPENAI_MODEL: ${OPENAI_MODEL:-gpt-4o-mini}
+      ANTHROPIC_API_KEY: ${ANTHROPIC_API_KEY:-}
+      ANTHROPIC_MODEL: ${ANTHROPIC_MODEL:-claude-haiku-4-5-20251001}
+    ports:
+      - "8000:8000"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    volumes:
+      - ./backend:/app
+    command: >-
+      sh -c "alembic -c alembic/alembic.ini upgrade head &&
+      uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload"
+
+  frontend:
+    build:
+      context: ./frontend
+    ports:
+      - "4000:80"
+    depends_on:
+      - api
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://localhost/"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+
+volumes:
+  postgres_data:

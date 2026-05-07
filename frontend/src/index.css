@@ -1,0 +1,25 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  body {
+    @apply bg-gray-50 text-gray-900 antialiased;
+  }
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+@keyframes panelIn {
+  from { opacity: 0; transform: translate3d(0, 24px, 0); }
+  to   { opacity: 1; transform: translate3d(0, 0, 0); }
+}
+
+/* Use `both` so the element stays at the final state if the animation
+   is restarted by React's reconciliation between renders. */
+.animate-fadeIn  { animation: fadeIn  0.25s ease-out both; }
+.animate-panelIn { animation: panelIn 0.32s cubic-bezier(0.16, 1, 0.3, 1) both; }
+
