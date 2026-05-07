@@ -148,10 +148,10 @@ export default function EvidencePage() {
             Grafo <strong>{graphResult.status}</strong> — {graphResult.node_count} nós, {graphResult.edge_count} arestas.
           </div>
           <Link
-            to={`/graph?selected=${graphResult.graph_project_id}`}
+            to={`/political/projects/${projectId}/graph`}
             className="text-emerald-800 hover:underline font-medium whitespace-nowrap"
           >
-            Abrir →
+            Abrir grafo D3 →
           </Link>
         </div>
       )}

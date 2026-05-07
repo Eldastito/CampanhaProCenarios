@@ -47,3 +47,6 @@ coverage/
 *.sqlite3
 *.db
 /tmp/
+
+# TypeScript incremental build cache
+*.tsbuildinfo
