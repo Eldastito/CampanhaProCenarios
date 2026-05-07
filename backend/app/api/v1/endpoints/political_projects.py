@@ -9,7 +9,7 @@ from __future__ import annotations
 
 from uuid import uuid4
 
-from fastapi import APIRouter, Depends, HTTPException, Query, status
+from fastapi import APIRouter, Depends, HTTPException, Query, Response, status
 from sqlalchemy.orm import Session
 
 from app.db.session import get_db
@@ -186,13 +186,14 @@ def update_project(
 @router.delete(
     "/{project_id}",
     status_code=status.HTTP_204_NO_CONTENT,
+    response_class=Response,
     summary="Excluir projeto eleitoral (somente admin)",
 )
 def delete_project(
     project_id: str,
     db: Session = Depends(get_db),
     user: User = Depends(require_analyst),
-) -> None:
+) -> Response:
     repo = PoliticalProjectRepository(db)
     project = repo.get_by_id(project_id)
     if project is None:
@@ -216,3 +217,4 @@ def delete_project(
         payload={"name": project.name},
     )
     repo.delete(project)
+    return Response(status_code=status.HTTP_204_NO_CONTENT)
