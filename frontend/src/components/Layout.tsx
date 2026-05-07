@@ -38,7 +38,7 @@ export default function Layout({ children, wide = false }: { children: ReactNode
         {/* Logo */}
         <div className="px-6 py-5 border-b border-gray-700">
           <span className="text-lg font-bold tracking-wide">
-            <span className="text-brand-500">FORGE</span>{' '}
+            <span className="text-brand-500">CampanhaPro</span>{' '}
             <span className="text-gray-300 font-normal text-sm">Scenario Lab</span>
           </span>
         </div>

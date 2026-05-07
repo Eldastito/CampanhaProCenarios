@@ -105,6 +105,6 @@ jobs:
         with:
           context: ./backend
           push: false
-          tags: forge-scenario-lab-api:ci
+          tags: campanhapro-cenarios-api:ci
           cache-from: type=gha
           cache-to: type=gha,mode=max

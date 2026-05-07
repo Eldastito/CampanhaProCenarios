@@ -1,6 +1,6 @@
 # Frontend
 
-Frontend sugerido para o FORGE Scenario Lab.
+Frontend sugerido para o CampanhaPro Cenários.
 
 ## Stack inicial
 - React

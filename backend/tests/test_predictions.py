@@ -2,7 +2,7 @@
 
 import uuid
 
-from tests.conftest import api_key_headers, forge_secret_headers
+from tests.conftest import api_key_headers, campanhapro_secret_headers
 
 _FULL_FACTORS = {
     "training": 80,
@@ -85,17 +85,17 @@ def test_acceptance_without_factors_returns_low_confidence(client):
     assert resp.status_code == 200
     body = resp.json()
     assert body["confidence"] <= 0.10
-    assert any("no factor" in line.lower() or "no forge" in line.lower() for line in body["explanation"])
+    assert any("no factor" in line.lower() or "no campanhapro" in line.lower() for line in body["explanation"])
 
 
-def test_acceptance_uses_forge_snapshot_when_no_factors_provided(client):
+def test_acceptance_uses_campanhapro_snapshot_when_no_factors_provided(client):
     """After ingesting a snapshot, prediction without factors should use it."""
     # Ingest a snapshot with known factors
     client.post(
-        "/api/v1/forge/ingest/snapshots",
+        "/api/v1/campanhapro/ingest/snapshots",
         json={
             "request_id": str(uuid.uuid4()),
-            "source_system": "forge",
+            "source_system": "campanhapro",
             "organization_id": "org_demo_001",
             "snapshot_type": "adoption_metrics",
             "reference_date": "2026-03-31T00:00:00",
@@ -110,7 +110,7 @@ def test_acceptance_uses_forge_snapshot_when_no_factors_provided(client):
                 }
             },
         },
-        headers=forge_secret_headers(),
+        headers=campanhapro_secret_headers(),
     )
 
     resp = client.post(
@@ -119,7 +119,7 @@ def test_acceptance_uses_forge_snapshot_when_no_factors_provided(client):
         headers=api_key_headers(),
     )
     body = resp.json()
-    # Should now have higher confidence since FORGE snapshot was found
+    # Should now have higher confidence since CampanhaPro snapshot was found
     assert body["confidence"] > 0.10, f"Expected higher confidence from snapshot, got {body['confidence']}"
     assert body["value"] >= 0.80
 

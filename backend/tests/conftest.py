@@ -16,7 +16,7 @@ from app.models.organization import Organization
 from app.services.bootstrap_service import BootstrapService
 
 _INTERNAL_API_KEY = settings.internal_api_key
-_FORGE_SECRET = settings.forge_ingest_shared_secret
+_CAMPANHAPRO_SECRET = settings.campanhapro_ingest_shared_secret
 
 
 def _make_engine():
@@ -95,9 +95,9 @@ def api_key_headers() -> dict[str, str]:
     return {"x-api-key": _INTERNAL_API_KEY}
 
 
-def forge_secret_headers() -> dict[str, str]:
-    """Headers for FORGE ingest calls (X-Forge-Secret)."""
-    return {"x-forge-secret": _FORGE_SECRET}
+def campanhapro_secret_headers() -> dict[str, str]:
+    """Headers for CampanhaPro ingest calls (X-CampanhaPro-Secret)."""
+    return {"x-campanhapro-secret": _CAMPANHAPRO_SECRET}
 
 
 def make_jwt_token(user_id: str, org_id: str, role: str = "analyst") -> str:

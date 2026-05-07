@@ -6,7 +6,7 @@ class AcceptancePredictionRequest(BaseModel):
     scope_type: str
     scope_id: str
     # Optional factor values (0–100 scale) for on-demand scoring.
-    # When omitted the engine falls back to the latest FORGE snapshot for the org.
+    # When omitted the engine falls back to the latest CampanhaPro snapshot for the org.
     factors: dict[str, float] | None = Field(
         default=None,
         description="Factor scores on a 0–100 scale. Keys: training, digital_maturity, "

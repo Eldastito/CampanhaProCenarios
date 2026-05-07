@@ -17,8 +17,8 @@ export const SCENARIO_CATALOG: ScenarioTypeDef[] = [
   {
     type: 'education',
     label: 'Educação',
-    description: 'Cenários para escolas públicas e privadas. Dados via plataforma FORGE.',
-    sourceSystem: 'FORGE',
+    description: 'Cenários para escolas públicas e privadas. Dados via plataforma CampanhaPro.',
+    sourceSystem: 'CAMPANHAPRO',
     icon: '🎓',
     factors: [
       { key: 'training', label: 'Treinamento', weight: 0.20 },

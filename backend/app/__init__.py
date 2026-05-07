@@ -1,1 +1,1 @@
-"""FORGE Scenario Lab backend package."""
+"""CampanhaPro Cenários backend package."""

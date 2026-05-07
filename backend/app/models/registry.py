@@ -1,12 +1,12 @@
-from app.models.forge_ingest import ForgeEvent, ForgeSnapshot
+from app.models.campanhapro_ingest import CampanhaProEvent, CampanhaProSnapshot
 from app.models.organization import Organization
 from app.models.prediction import Prediction
 from app.models.scenario import Scenario, ScenarioRun
 from app.models.user import User
 
 __all__ = [
-    "ForgeEvent",
-    "ForgeSnapshot",
+    "CampanhaProEvent",
+    "CampanhaProSnapshot",
     "Organization",
     "Prediction",
     "Scenario",

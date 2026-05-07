@@ -1,1 +1,1 @@
-"""API package for FORGE Scenario Lab."""
+"""API package for CampanhaPro Cenários."""

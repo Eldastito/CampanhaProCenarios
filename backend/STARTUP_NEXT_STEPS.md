@@ -17,11 +17,11 @@ The repository already contains:
 1. API initializes logging and creates tables at startup
 2. scenario endpoints persist scenario and scenario run records
 3. prediction endpoints persist prediction records
-4. forge ingest endpoints require integration secret
+4. campanhapro ingest endpoints require integration secret
 5. scenario and prediction endpoints require internal API key
 
 ## Next wiring pass
-1. persist FORGE ingest logs
+1. persist CampanhaPro ingest logs
 2. add report export storage flow
 3. add worker runtime backed by Redis
 4. add user auth and organization-aware RBAC

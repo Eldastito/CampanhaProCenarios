@@ -668,9 +668,9 @@ function buildReportLines(graph: GraphData, simulation: SimulationView | null, r
   const media   = graph.edges.filter((e) => e.relationship_type === 'CONSOME').length
 
   return [
-    `[FORGE] Iniciando geração — ID: ${reportId}`,
-    `[FORGE] Carregando grafo: ${graph.name}`,
-    `[FORGE] Entidades encontradas: ${graph.node_count} nós, ${graph.edge_count} arestas`,
+    `[CampanhaPro] Iniciando geração — ID: ${reportId}`,
+    `[CampanhaPro] Carregando grafo: ${graph.name}`,
+    `[CampanhaPro] Entidades encontradas: ${graph.node_count} nós, ${graph.edge_count} arestas`,
     `[SEÇÃO 1/3] Análise de Cenário`,
     `  → Tipos de entidade: ${types}`,
     `  → Candidatos identificados: ${candidates}`,
@@ -683,8 +683,8 @@ function buildReportLines(graph: GraphData, simulation: SimulationView | null, r
       ? `[SEÇÃO 3/3] Simulação — ${simulation.steps.length} atos`
       : `[SEÇÃO 3/3] Simulação — nenhuma simulação disponível`,
     simulation?.summary ? `  → ${simulation.summary}` : '  → Execute uma simulação para análise dinâmica',
-    `[FERRAMENTAS] GraphRAG ✓  PanoramaSearch ✓  InsightForge ✓`,
-    `[FORGE] Relatório concluído — ${reportId}`,
+    `[FERRAMENTAS] GraphRAG ✓  PanoramaSearch ✓  InsightCampanha ✓`,
+    `[CampanhaPro] Relatório concluído — ${reportId}`,
   ]
 }
 
@@ -774,7 +774,7 @@ function ReportPanelInner({ graph, simulation, onClose }: {
                 key={i}
                 className={`leading-relaxed ${
                   line.startsWith('[SEÇÃO') ? 'text-brand-400 font-bold' :
-                  line.startsWith('[FORGE]') ? 'text-green-400' :
+                  line.startsWith('[CampanhaPro]') ? 'text-green-400' :
                   line.startsWith('[FERRAMENTAS]') ? 'text-yellow-400' :
                   'text-gray-300'
                 }`}

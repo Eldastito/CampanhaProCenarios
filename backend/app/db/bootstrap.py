@@ -16,8 +16,8 @@ REQUIRED_TABLES = {
     "scenarios",
     "scenario_runs",
     "users",
-    "forge_events",
-    "forge_snapshots",
+    "campanhapro_events",
+    "campanhapro_snapshots",
 }
 
 

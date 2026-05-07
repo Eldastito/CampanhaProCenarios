@@ -13,7 +13,7 @@ class ScenarioFactor:
 
 
 # ---------------------------------------------------------------------------
-# Education — FORGE platform (escolas públicas/privadas)
+# Education — CampanhaPro platform (escolas públicas/privadas)
 # ---------------------------------------------------------------------------
 
 EDUCATION_FACTORS: Final[tuple[ScenarioFactor, ...]] = (

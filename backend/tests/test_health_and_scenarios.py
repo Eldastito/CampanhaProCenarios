@@ -46,7 +46,7 @@ def test_health_check(client):
     payload = response.json()
 
     assert payload["status"] == "ok"
-    assert payload["service"] == "forge-scenario-lab-api"
+    assert payload["service"] == "campanhapro-cenarios-api"
 
 
 def test_readiness_check(client):

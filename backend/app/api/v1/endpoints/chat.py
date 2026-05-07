@@ -1,4 +1,4 @@
-"""Agent chat endpoints — 55 personas + 4 tools (InsightForge, PanoramaSearch, QuickSearch, VirtualInterview)."""
+"""Agent chat endpoints — 55 personas + 4 tools (InsightCampanha, PanoramaSearch, QuickSearch, VirtualInterview)."""
 from __future__ import annotations
 
 import logging
@@ -23,7 +23,7 @@ logger = logging.getLogger(__name__)
 router = APIRouter(tags=["chat"])
 
 
-ToolType = Literal["conversation", "quick_search", "panorama_search", "insight_forge", "virtual_interview"]
+ToolType = Literal["conversation", "quick_search", "panorama_search", "insight_campanha", "virtual_interview"]
 
 
 class ChatMessage(BaseModel):
@@ -82,8 +82,8 @@ def send_message(
         response = _handle_quick_search(agent, last_user_msg, body.graph_project_id, db)
     elif body.tool_type == "panorama_search":
         response = _handle_panorama_search(agent, last_user_msg, body.graph_project_id, db)
-    elif body.tool_type == "insight_forge":
-        response = _handle_insight_forge(agent, last_user_msg, body.graph_project_id, db)
+    elif body.tool_type == "insight_campanha":
+        response = _handle_insight_campanha(agent, last_user_msg, body.graph_project_id, db)
     elif body.tool_type == "virtual_interview":
         response = _handle_virtual_interview(agent, body.messages)
     else:
@@ -223,21 +223,21 @@ def _handle_panorama_search(agent, query: str, graph_id: str | None, db: Session
     )
 
 
-def _handle_insight_forge(agent, query: str, graph_id: str | None, db: Session) -> ChatResponse:
+def _handle_insight_campanha(agent, query: str, graph_id: str | None, db: Session) -> ChatResponse:
     """Deep attribution — cross-reference simulation outcomes with graph nodes."""
     if not graph_id:
-        return ChatResponse(reply="⚠ Selecione um grafo para usar o InsightForge.",
-                            agent_name=agent.name, tool_used="insight_forge", tool_metadata={})
+        return ChatResponse(reply="⚠ Selecione um grafo para usar o InsightCampanha.",
+                            agent_name=agent.name, tool_used="insight_campanha", tool_metadata={})
 
     sims = db.query(Simulation).filter(Simulation.project_id == graph_id).order_by(Simulation.created_at.desc()).limit(3).all()
     if not sims:
         return ChatResponse(
             reply="⚠ Nenhuma simulação executada. Execute uma simulação no modo Dividir antes de usar a Atribuição Profunda.",
-            agent_name=agent.name, tool_used="insight_forge", tool_metadata={},
+            agent_name=agent.name, tool_used="insight_campanha", tool_metadata={},
         )
 
     nodes = {n.id: n for n in db.query(GraphNode).filter(GraphNode.project_id == graph_id).all()}
-    lines = [f"## InsightForge — Atribuição Profunda\n"]
+    lines = [f"## InsightCampanha — Atribuição Profunda\n"]
 
     for sim in sims:
         steps = db.query(SimulationStep).filter(SimulationStep.simulation_id == sim.id).all()
@@ -261,7 +261,7 @@ def _handle_insight_forge(agent, query: str, graph_id: str | None, db: Session) 
     return ChatResponse(
         reply="\n".join(lines),
         agent_name=agent.name,
-        tool_used="insight_forge",
+        tool_used="insight_campanha",
         tool_metadata={"simulations_analyzed": len(sims), "nodes_in_graph": len(nodes)},
     )
 

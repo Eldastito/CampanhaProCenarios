@@ -6,14 +6,14 @@ FORGE -> Ingestion API -> Normalization/Feature Store -> Predictive Engine -> Sc
 ## Componentes
 
 ### 1. Ingestion API
-Recebe eventos e snapshots da FORGE com autenticação server-to-server.
+Recebe eventos e snapshots do CampanhaPro com autenticação server-to-server.
 
 ### 2. Normalization Layer
 Valida payloads, normaliza campos, registra origem, versiona e prepara features.
 
 ### 3. Predictive Engine
 Calcula scores iniciais:
-- aceitação da FORGE
+- aceitação do CampanhaPro
 - prontidão institucional
 - risco de evasão
 - resistência docente

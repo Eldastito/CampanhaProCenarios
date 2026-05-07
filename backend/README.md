@@ -1,6 +1,6 @@
 # Backend
 
-Backend sugerido para o FORGE Scenario Lab.
+Backend sugerido para o CampanhaPro Cenários.
 
 ## Stack inicial
 - Python 3.11+
@@ -12,7 +12,7 @@ Backend sugerido para o FORGE Scenario Lab.
 
 ## Responsabilidades
 - autenticação e autorização
-- ingestão da FORGE
+- ingestão do CampanhaPro
 - normalização e persistência
 - execução de cenários
 - previsão e relatórios

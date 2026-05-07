@@ -1,4 +1,4 @@
-"""add users, forge_events, forge_snapshots
+"""add users, campanhapro_events, campanhapro_snapshots
 
 Revision ID: 20260413_0002
 Revises: 20260409_0001
@@ -37,10 +37,10 @@ def upgrade() -> None:
     op.create_index("ix_users_organization_id", "users", ["organization_id"], unique=False)
 
     # ------------------------------------------------------------------
-    # forge_events
+    # campanhapro_events
     # ------------------------------------------------------------------
     op.create_table(
-        "forge_events",
+        "campanhapro_events",
         sa.Column("id", sa.String(length=64), nullable=False),
         sa.Column("request_id", sa.String(length=64), nullable=False),
         sa.Column("source_system", sa.String(length=100), nullable=False),
@@ -53,15 +53,15 @@ def upgrade() -> None:
         sa.PrimaryKeyConstraint("id"),
         sa.UniqueConstraint("request_id"),
     )
-    op.create_index("ix_forge_events_request_id", "forge_events", ["request_id"], unique=True)
-    op.create_index("ix_forge_events_organization_id", "forge_events", ["organization_id"], unique=False)
-    op.create_index("ix_forge_events_event_type", "forge_events", ["event_type"], unique=False)
+    op.create_index("ix_campanhapro_events_request_id", "campanhapro_events", ["request_id"], unique=True)
+    op.create_index("ix_campanhapro_events_organization_id", "campanhapro_events", ["organization_id"], unique=False)
+    op.create_index("ix_campanhapro_events_event_type", "campanhapro_events", ["event_type"], unique=False)
 
     # ------------------------------------------------------------------
-    # forge_snapshots
+    # campanhapro_snapshots
     # ------------------------------------------------------------------
     op.create_table(
-        "forge_snapshots",
+        "campanhapro_snapshots",
         sa.Column("id", sa.String(length=64), nullable=False),
         sa.Column("request_id", sa.String(length=64), nullable=False),
         sa.Column("source_system", sa.String(length=100), nullable=False),
@@ -74,21 +74,21 @@ def upgrade() -> None:
         sa.PrimaryKeyConstraint("id"),
         sa.UniqueConstraint("request_id"),
     )
-    op.create_index("ix_forge_snapshots_request_id", "forge_snapshots", ["request_id"], unique=True)
-    op.create_index("ix_forge_snapshots_organization_id", "forge_snapshots", ["organization_id"], unique=False)
-    op.create_index("ix_forge_snapshots_snapshot_type", "forge_snapshots", ["snapshot_type"], unique=False)
+    op.create_index("ix_campanhapro_snapshots_request_id", "campanhapro_snapshots", ["request_id"], unique=True)
+    op.create_index("ix_campanhapro_snapshots_organization_id", "campanhapro_snapshots", ["organization_id"], unique=False)
+    op.create_index("ix_campanhapro_snapshots_snapshot_type", "campanhapro_snapshots", ["snapshot_type"], unique=False)
 
 
 def downgrade() -> None:
-    op.drop_index("ix_forge_snapshots_snapshot_type", table_name="forge_snapshots")
-    op.drop_index("ix_forge_snapshots_organization_id", table_name="forge_snapshots")
-    op.drop_index("ix_forge_snapshots_request_id", table_name="forge_snapshots")
-    op.drop_table("forge_snapshots")
+    op.drop_index("ix_campanhapro_snapshots_snapshot_type", table_name="campanhapro_snapshots")
+    op.drop_index("ix_campanhapro_snapshots_organization_id", table_name="campanhapro_snapshots")
+    op.drop_index("ix_campanhapro_snapshots_request_id", table_name="campanhapro_snapshots")
+    op.drop_table("campanhapro_snapshots")
 
-    op.drop_index("ix_forge_events_event_type", table_name="forge_events")
-    op.drop_index("ix_forge_events_organization_id", table_name="forge_events")
-    op.drop_index("ix_forge_events_request_id", table_name="forge_events")
-    op.drop_table("forge_events")
+    op.drop_index("ix_campanhapro_events_event_type", table_name="campanhapro_events")
+    op.drop_index("ix_campanhapro_events_organization_id", table_name="campanhapro_events")
+    op.drop_index("ix_campanhapro_events_request_id", table_name="campanhapro_events")
+    op.drop_table("campanhapro_events")
 
     op.drop_index("ix_users_organization_id", table_name="users")
     op.drop_index("ix_users_email", table_name="users")

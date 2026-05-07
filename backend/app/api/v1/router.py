@@ -4,7 +4,6 @@ from app.api.v1.endpoints.auth import router as auth_router
 from app.api.v1.endpoints.backoffice_ingest import router as backoffice_ingest_router
 from app.api.v1.endpoints.campanhapro_ingest import router as campanhapro_ingest_router
 from app.api.v1.endpoints.chat import router as chat_router
-from app.api.v1.endpoints.forge_ingest import router as forge_ingest_router
 from app.api.v1.endpoints.graph import router as graph_router
 from app.api.v1.endpoints.health import router as health_router
 from app.api.v1.endpoints.predictions import router as predictions_router
@@ -17,7 +16,6 @@ from app.api.v1.endpoints.simulations_graph import router as simulations_router
 router = APIRouter()
 router.include_router(health_router, prefix="/health", tags=["health"])
 router.include_router(auth_router, prefix="/auth", tags=["auth"])
-router.include_router(forge_ingest_router, prefix="/forge", tags=["forge-ingest"])
 router.include_router(campanhapro_ingest_router, prefix="/campanhapro", tags=["campanhapro-ingest"])
 router.include_router(backoffice_ingest_router, prefix="/backoffice", tags=["backoffice-ingest"])
 router.include_router(scenarios_router, prefix="/scenarios", tags=["scenarios"])

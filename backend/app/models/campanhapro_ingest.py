@@ -7,10 +7,10 @@ from app.core.time import utc_now_naive
 from app.db.base import Base
 
 
-class ForgeEvent(Base):
-    """Persisted FORGE event received via /forge/ingest/events."""
+class CampanhaProEvent(Base):
+    """Persisted CampanhaPro event received via /campanhapro/ingest/events."""
 
-    __tablename__ = "forge_events"
+    __tablename__ = "campanhapro_events"
 
     id: Mapped[str] = mapped_column(String(64), primary_key=True)
     # Idempotency key — duplicate request_ids are rejected
@@ -24,10 +24,10 @@ class ForgeEvent(Base):
     received_at: Mapped[datetime] = mapped_column(DateTime, nullable=False, default=utc_now_naive)
 
 
-class ForgeSnapshot(Base):
-    """Persisted FORGE snapshot received via /forge/ingest/snapshots."""
+class CampanhaProSnapshot(Base):
+    """Persisted CampanhaPro snapshot received via /campanhapro/ingest/snapshots."""
 
-    __tablename__ = "forge_snapshots"
+    __tablename__ = "campanhapro_snapshots"
 
     id: Mapped[str] = mapped_column(String(64), primary_key=True)
     # Idempotency key — duplicate request_ids are rejected

@@ -36,7 +36,7 @@ export default function LoginPage() {
       <div className="w-full max-w-md">
         <div className="text-center mb-8">
           <h1 className="text-3xl font-bold text-gray-900">
-            <span className="text-brand-600">FORGE</span> Scenario Lab
+            <span className="text-brand-600">CampanhaPro</span> Cenários
           </h1>
           <p className="text-gray-500 mt-2">Simulação de cenários preditivos</p>
         </div>

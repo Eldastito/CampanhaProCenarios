@@ -12,7 +12,7 @@ import { useAuth } from '../contexts/AuthContext'
 
 const TOOLS: { id: ChatTool; icon: string; label: string; desc: string }[] = [
   { id: 'conversation', icon: '💬', label: 'Conversa', desc: 'Diálogo com a persona' },
-  { id: 'insight_forge', icon: '🔥', label: 'InsightForge', desc: 'Atribuição profunda — alinha simulação com grafo' },
+  { id: 'insight_campanha', icon: '🔥', label: 'InsightCampanha', desc: 'Atribuição profunda — alinha simulação com grafo' },
   { id: 'panorama_search', icon: '🌐', label: 'PanoramaSearch', desc: 'BFS — propagação de eventos' },
   { id: 'quick_search', icon: '⚡', label: 'Recuperação Rápida', desc: 'GraphRAG — busca instantânea' },
   { id: 'virtual_interview', icon: '🎤', label: 'Entrevista Virtual', desc: 'Entrevista em múltiplos turnos' },
@@ -372,7 +372,7 @@ export default function ChatPage() {
                 </div>
                 <p className="text-[11px] text-gray-400 mt-2">
                   {TOOLS.find((t) => t.id === tool)?.desc}
-                  {(tool === 'quick_search' || tool === 'panorama_search' || tool === 'insight_forge') && !graphProjectId && (
+                  {(tool === 'quick_search' || tool === 'panorama_search' || tool === 'insight_campanha') && !graphProjectId && (
                     <span className="text-amber-600"> · ⚠ requer um grafo selecionado acima</span>
                   )}
                 </p>

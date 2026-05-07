@@ -31,7 +31,6 @@ _INSECURE_SECRET_DEFAULTS = frozenset(
     {
         "change-me",
         "dev-internal-key",
-        "dev-forge-secret",
         "dev-jwt-secret",
         "dev-campanhapro-secret",
         "dev-backoffice-secret",
@@ -47,14 +46,14 @@ class Settings(BaseSettings):
         extra="ignore",
     )
 
-    app_name: str = Field(default="FORGE Scenario Lab API", alias="APP_NAME")
+    app_name: str = Field(default="CampanhaPro Cenários API", alias="APP_NAME")
     app_env: str = Field(default="development", alias="APP_ENV")
     app_debug: bool = Field(default=True, alias="APP_DEBUG")
     api_v1_prefix: str = Field(default="/api/v1", alias="API_V1_PREFIX")
 
     postgres_host: str = Field(default="localhost", alias="POSTGRES_HOST")
     postgres_port: int = Field(default=5432, alias="POSTGRES_PORT")
-    postgres_db: str = Field(default="forge_scenario_lab", alias="POSTGRES_DB")
+    postgres_db: str = Field(default="campanha_pro_cenarios", alias="POSTGRES_DB")
     postgres_user: str = Field(default="postgres", alias="POSTGRES_USER")
     postgres_password: str = Field(default="postgres", alias="POSTGRES_PASSWORD")
 
@@ -66,12 +65,6 @@ class Settings(BaseSettings):
     # Anthropic Claude API (used for graph entity extraction and simulation)
     anthropic_api_key: str | None = Field(default=None, alias="ANTHROPIC_API_KEY")
     anthropic_model: str = Field(default="claude-haiku-4-5-20251001", alias="ANTHROPIC_MODEL")
-
-    # FORGE server-to-server secret (X-Forge-Secret header)
-    forge_ingest_shared_secret: str = Field(
-        default="dev-forge-secret",
-        alias="FORGE_INGEST_SHARED_SECRET",
-    )
 
     # CampanhaPro server-to-server secret (X-CampanhaPro-Secret header)
     campanhapro_ingest_shared_secret: str = Field(
@@ -108,9 +101,6 @@ class Settings(BaseSettings):
             return self
 
         errors: list[str] = []
-
-        if self.forge_ingest_shared_secret in _INSECURE_SECRET_DEFAULTS:
-            errors.append("FORGE_INGEST_SHARED_SECRET must be set to a secure value in production")
 
         if self.campanhapro_ingest_shared_secret in _INSECURE_SECRET_DEFAULTS:
             errors.append("CAMPANHAPRO_INGEST_SHARED_SECRET must be set to a secure value in production")

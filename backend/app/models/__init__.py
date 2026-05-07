@@ -1,1 +1,1 @@
-"""ORM models for FORGE Scenario Lab."""
+"""ORM models for CampanhaPro Cenários."""

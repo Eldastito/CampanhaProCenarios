@@ -4,7 +4,7 @@ Computes acceptance probability and evasion risk based on scenario factor
 values.  Factor values use a 0–100 scale (same as ScenarioFactor inputs).
 
 When factors are not provided directly, the engine attempts to read them
-from the latest FORGE snapshot for the organisation.  If no data is
+from the latest CampanhaPro snapshot for the organisation.  If no data is
 available, it returns a low-confidence default.
 """
 
@@ -15,7 +15,7 @@ from uuid import uuid4
 from sqlalchemy.orm import Session
 
 from app.models.prediction import Prediction
-from app.repositories.forge_ingest_repository import ForgeIngestRepository
+from app.repositories.campanhapro_ingest_repository import CampanhaProIngestRepository
 from app.repositories.prediction_repository import PredictionRepository
 
 # ---------------------------------------------------------------------------
@@ -104,9 +104,9 @@ def _interpret_evasion(value: float) -> str:
 
 
 def _extract_factors_from_snapshot(snapshot_payload: dict) -> dict[str, float]:
-    """Best-effort extraction of factor values from a FORGE snapshot payload.
+    """Best-effort extraction of factor values from a CampanhaPro snapshot payload.
 
-    FORGE snapshots may include a top-level ``factors`` dict or individual
+    CampanhaPro snapshots may include a top-level ``factors`` dict or individual
     numeric keys matching scenario factor names.  Unknown keys are ignored.
     """
     from app.core.scenario_catalog import SCENARIO_FACTOR_KEYS
@@ -138,7 +138,7 @@ def _extract_factors_from_snapshot(snapshot_payload: dict) -> dict[str, float]:
 class PredictionService:
     def __init__(self, db: Session) -> None:
         self._pred_repo = PredictionRepository(db)
-        self._ingest_repo = ForgeIngestRepository(db)
+        self._ingest_repo = CampanhaProIngestRepository(db)
 
     # ------------------------------------------------------------------
     # Public API
@@ -159,7 +159,7 @@ class PredictionService:
                 _NO_DATA_VALUE,
                 _NO_DATA_CONFIDENCE,
                 [
-                    "No factor data provided and no FORGE snapshot found for this organisation.",
+                    "No factor data provided and no CampanhaPro snapshot found for this organisation.",
                     "Pass factor values in the request body for an immediate prediction.",
                 ],
             )
@@ -194,7 +194,7 @@ class PredictionService:
                 _NO_DATA_VALUE,
                 _NO_DATA_CONFIDENCE,
                 [
-                    "No factor data provided and no FORGE snapshot found for this organisation.",
+                    "No factor data provided and no CampanhaPro snapshot found for this organisation.",
                     "Pass factor values in the request body for an immediate prediction.",
                 ],
             )
@@ -248,7 +248,7 @@ class PredictionService:
 
         Priority:
         1. Factors provided explicitly in the request.
-        2. Latest FORGE snapshot for the organisation.
+        2. Latest CampanhaPro snapshot for the organisation.
         3. None → caller returns a low-confidence default.
         """
         if factors:

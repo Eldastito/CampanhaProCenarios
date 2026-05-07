@@ -596,7 +596,7 @@ export interface AgentPersona {
   avatar_letter: string
 }
 
-export type ChatTool = 'conversation' | 'quick_search' | 'panorama_search' | 'insight_forge' | 'virtual_interview'
+export type ChatTool = 'conversation' | 'quick_search' | 'panorama_search' | 'insight_campanha' | 'virtual_interview'
 
 export interface ChatMessage {
   role: 'user' | 'assistant'

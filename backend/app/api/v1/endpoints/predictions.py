@@ -13,7 +13,7 @@ from app.services.prediction_service import PredictionService
 router = APIRouter()
 
 
-@router.post("/acceptance", response_model=PredictionResponse, summary="Estimate FORGE acceptance")
+@router.post("/acceptance", response_model=PredictionResponse, summary="Estimate CampanhaPro acceptance")
 def predict_acceptance(
     body: AcceptancePredictionRequest,
     db: Session = Depends(get_db),

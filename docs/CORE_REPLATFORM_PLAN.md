@@ -1,7 +1,7 @@
 # CORE Replatform Plan
 
 ## Objetivo
-Construir o FORGE Scenario Lab com arquitetura própria, independente de serviços centrais acoplados, preparada para operar com camada de memória/grafo própria ou substituível, fila assíncrona, persistência forte, storage adequado, observabilidade e autenticação.
+Construir o CampanhaPro Cenários com arquitetura própria, independente de serviços centrais acoplados, preparada para operar com camada de memória/grafo própria ou substituível, fila assíncrona, persistência forte, storage adequado, observabilidade e autenticação.
 
 ## Decisões iniciais
 - Não acoplar o produto a um único fornecedor de memória/grafo.

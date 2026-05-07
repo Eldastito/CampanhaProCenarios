@@ -2,7 +2,7 @@ services:
   postgres:
     image: postgres:16-alpine
     environment:
-      POSTGRES_DB: forge_scenario_lab
+      POSTGRES_DB: campanha_pro_cenarios
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: postgres
     ports:
@@ -10,7 +10,7 @@ services:
     volumes:
       - postgres_data:/var/lib/postgresql/data
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U postgres -d forge_scenario_lab"]
+      test: ["CMD-SHELL", "pg_isready -U postgres -d campanha_pro_cenarios"]
       interval: 10s
       timeout: 5s
       retries: 10
@@ -29,7 +29,7 @@ services:
     build:
       context: ./backend
     environment:
-      APP_NAME: FORGE Scenario Lab API
+      APP_NAME: CampanhaPro Cenários API
       APP_ENV: development
       APP_DEBUG: "true"
       API_V1_PREFIX: /api/v1
@@ -37,12 +37,13 @@ services:
       BACKEND_CORS_ORIGINS: "http://localhost:4000,http://localhost:4173,http://localhost:80,http://frontend"
       POSTGRES_HOST: postgres
       POSTGRES_PORT: "5432"
-      POSTGRES_DB: forge_scenario_lab
+      POSTGRES_DB: campanha_pro_cenarios
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: postgres
       REDIS_URL: redis://redis:6379/0
       # CHANGE THESE IN PRODUCTION
-      FORGE_INGEST_SHARED_SECRET: dev-forge-secret
+      CAMPANHAPRO_INGEST_SHARED_SECRET: dev-campanhapro-secret
+      BACKOFFICE_INGEST_SHARED_SECRET: dev-backoffice-secret
       INTERNAL_API_KEY: dev-internal-key
       JWT_SECRET_KEY: dev-jwt-secret
       # AI provider keys — read from .env file

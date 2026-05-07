@@ -11,7 +11,7 @@ router = APIRouter()
 def health_check() -> dict[str, str]:
     return {
         "status": "ok",
-        "service": "forge-scenario-lab-api",
+        "service": "campanhapro-cenarios-api",
     }
 
 
@@ -21,7 +21,7 @@ def readiness_check(db: Session = Depends(get_db)) -> dict:
         healthcheck_database(db)
         return {
             "status": "ready",
-            "service": "forge-scenario-lab-api",
+            "service": "campanhapro-cenarios-api",
             "dependencies": {
                 "database": "ok",
             },
@@ -31,7 +31,7 @@ def readiness_check(db: Session = Depends(get_db)) -> dict:
             status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
             detail={
                 "status": "not_ready",
-                "service": "forge-scenario-lab-api",
+                "service": "campanhapro-cenarios-api",
                 "dependencies": {
                     "database": "error",
                 },

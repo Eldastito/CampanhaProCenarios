@@ -13,9 +13,9 @@ from sqlalchemy.orm import Session
 
 from app.auth.internal import require_campanhapro_ingest_secret
 from app.db.session import get_db
-from app.models.forge_ingest import ForgeSnapshot
-from app.repositories.forge_ingest_repository import ForgeIngestRepository
-from app.schemas.ingest import ForgeSnapshotIngestPayload, IngestAcceptedResponse
+from app.models.campanhapro_ingest import CampanhaProSnapshot
+from app.repositories.campanhapro_ingest_repository import CampanhaProIngestRepository
+from app.schemas.ingest import CampanhaProSnapshotIngestPayload, IngestAcceptedResponse
 
 logger = logging.getLogger(__name__)
 router = APIRouter()
@@ -28,14 +28,14 @@ router = APIRouter()
     summary="Ingest CampanhaPro snapshots",
 )
 def ingest_campanhapro_snapshots(
-    body: ForgeSnapshotIngestPayload,
+    body: CampanhaProSnapshotIngestPayload,
     db: Session = Depends(get_db),
     _: str = Depends(require_campanhapro_ingest_secret),
 ) -> IngestAcceptedResponse:
-    repo = ForgeIngestRepository(db)
+    repo = CampanhaProIngestRepository(db)
     request_id_str = str(body.request_id)
 
-    snapshot = ForgeSnapshot(
+    snapshot = CampanhaProSnapshot(
         id=str(uuid4()),
         request_id=request_id_str,
         source_system="CAMPANHAPRO",
