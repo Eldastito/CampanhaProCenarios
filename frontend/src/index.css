@@ -86,34 +86,118 @@
 --------------------------------------------------------------------------- */
 
 .pg-canvas {
-  background-color: #0b1020;
+  background:
+    radial-gradient(ellipse at 20% 30%, rgba(99, 102, 241, 0.18) 0%, transparent 55%),
+    radial-gradient(ellipse at 80% 70%, rgba(236, 72, 153, 0.12) 0%, transparent 55%),
+    radial-gradient(ellipse at 50% 50%, rgba(56, 189, 248, 0.08) 0%, transparent 60%),
+    #07091a;
+  background-size: 100% 100%, 100% 100%, 100% 100%, 22px 22px;
+  position: relative;
+  overflow: hidden;
+}
+.pg-canvas::before {
+  content: "";
+  position: absolute; inset: -10%;
   background-image:
-    radial-gradient(circle at 1px 1px, rgba(255,255,255,0.06) 1px, transparent 0);
+    radial-gradient(circle at 1px 1px, rgba(255,255,255,0.05) 1px, transparent 0);
   background-size: 22px 22px;
+  pointer-events: none;
+  animation: nebula 28s ease-in-out infinite alternate;
 }
 
-.pg-node circle {
-  cursor: pointer;
-  transition: stroke-width 120ms ease-out, filter 120ms ease-out;
+@keyframes nebula {
+  0%   { transform: translate3d(0, 0, 0) scale(1);    opacity: 0.7; }
+  100% { transform: translate3d(-2%, -3%, 0) scale(1.05); opacity: 1; }
 }
-.pg-node:hover circle      { stroke-width: 3px; filter: brightness(1.15); }
-.pg-node.selected circle   { stroke-width: 3px; filter: drop-shadow(0 0 8px currentColor); }
-.pg-node.dimmed   circle   { opacity: 0.25; }
+
+/* --- nós ---------------------------------------------------------------- */
+
+.pg-node {
+  --enter-delay: 0ms;
+  animation: pgNodeEnter 0.55s cubic-bezier(0.22, 1.4, 0.36, 1) both;
+  animation-delay: var(--enter-delay);
+}
+
+@keyframes pgNodeEnter {
+  0%   { opacity: 0; transform: scale(0.2); }
+  60%  { opacity: 1; transform: scale(1.18); }
+  100% { opacity: 1; transform: scale(1);   }
+}
+
+/* breathing contínuo (muito sutil) */
+.pg-node circle.pg-node-body {
+  cursor: pointer;
+  filter: url(#pg-glow);
+  transform-origin: center;
+  transform-box: fill-box;
+  animation: pgNodeBreathe 3.4s ease-in-out infinite;
+  animation-delay: var(--enter-delay);
+  transition: stroke-width 160ms ease-out, filter 160ms ease-out;
+}
+@keyframes pgNodeBreathe {
+  0%, 100% { transform: scale(1);    }
+  50%      { transform: scale(1.04); }
+}
+
+.pg-node:hover circle.pg-node-body { stroke-width: 3px; }
+.pg-node.selected circle.pg-node-body {
+  stroke-width: 3px;
+  animation: pgNodeBreathe 1.4s ease-in-out infinite,
+             pgSelectedGlow 1.6s ease-in-out infinite;
+}
+@keyframes pgSelectedGlow {
+  0%, 100% { filter: url(#pg-glow)        drop-shadow(0 0 4px currentColor); }
+  50%      { filter: url(#pg-glow-strong) drop-shadow(0 0 12px currentColor); }
+}
+.pg-node.dimmed circle.pg-node-body { opacity: 0.18; filter: none; animation: none; }
+.pg-node.dimmed text                 { opacity: 0.35; }
+
+/* halo pulsante (anel expandindo) atrás do nó selecionado */
+.pg-halo {
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2;
+  transform-origin: center;
+  transform-box: fill-box;
+  pointer-events: none;
+  animation: pgHaloPulse 1.8s ease-out infinite;
+}
+.pg-halo.delay-1 { animation-delay: 0.6s; }
+.pg-halo.delay-2 { animation-delay: 1.2s; }
+@keyframes pgHaloPulse {
+  0%   { transform: scale(0.7); opacity: 0.85; stroke-width: 3; }
+  100% { transform: scale(2.4); opacity: 0;    stroke-width: 0.5; }
+}
+
+/* --- arestas ------------------------------------------------------------ */
 
 .pg-edge {
   fill: none;
-  stroke: rgba(180, 192, 222, 0.55);
+  stroke: rgba(180, 192, 222, 0.45);
   stroke-width: 1.4;
-  transition: stroke 120ms ease-out, stroke-width 120ms ease-out;
+  transition: stroke 160ms ease-out, stroke-width 160ms ease-out, opacity 160ms;
+  cursor: pointer;
 }
-.pg-edge.highlighted { stroke: #fbbf24; stroke-width: 2.4; }
-.pg-edge.dimmed      { opacity: 0.12; }
+.pg-edge:hover { stroke: rgba(226, 232, 240, 0.85); stroke-width: 2; }
+
+/* arestas conectadas ao nó selecionado: energia fluindo */
+.pg-edge.highlighted {
+  stroke: #fbbf24;
+  stroke-width: 2.6;
+  stroke-dasharray: 6 8;
+  filter: drop-shadow(0 0 4px rgba(251, 191, 36, 0.65));
+  animation: pgEdgeFlow 0.9s linear infinite;
+}
+@keyframes pgEdgeFlow {
+  to { stroke-dashoffset: -28; }
+}
+.pg-edge.dimmed { opacity: 0.08; }
 
 .pg-edge-label {
   font-size: 9px;
   fill: rgba(226, 232, 240, 0.85);
   paint-order: stroke;
-  stroke: #0b1020;
+  stroke: #07091a;
   stroke-width: 3px;
   pointer-events: none;
 }
@@ -124,7 +208,9 @@
   fill: #f8fafc;
   pointer-events: none;
   paint-order: stroke;
-  stroke: rgba(11, 16, 32, 0.9);
+  stroke: rgba(7, 9, 26, 0.95);
   stroke-width: 2.5px;
+  letter-spacing: 0.01em;
 }
+
 

@@ -287,13 +287,25 @@ export function PoliticalGraphPanel({
     // grupo raiz para zoom/pan
     const root = svg.append('g').attr('class', 'pg-root')
 
-    const linkGroup = root.append('g').attr('class', 'pg-edges')
-    const linkLabelGroup = root.append('g').attr('class', 'pg-edge-labels')
-    const nodeGroup = root.append('g').attr('class', 'pg-nodes')
+    // ----- defs: filtros e marcadores ------------------------------------
+    const defs = svg.append('defs')
+
+    // Glow padrão (gaussian blur + composite)
+    const glow = defs.append('filter').attr('id', 'pg-glow').attr('x', '-60%').attr('y', '-60%').attr('width', '220%').attr('height', '220%')
+    glow.append('feGaussianBlur').attr('stdDeviation', '3.2').attr('result', 'blur')
+    const glowMerge = glow.append('feMerge')
+    glowMerge.append('feMergeNode').attr('in', 'blur')
+    glowMerge.append('feMergeNode').attr('in', 'SourceGraphic')
+
+    // Glow forte (usado no pulse do selecionado)
+    const glowStrong = defs.append('filter').attr('id', 'pg-glow-strong').attr('x', '-100%').attr('y', '-100%').attr('width', '300%').attr('height', '300%')
+    glowStrong.append('feGaussianBlur').attr('stdDeviation', '6').attr('result', 'blur')
+    const glowStrongMerge = glowStrong.append('feMerge')
+    glowStrongMerge.append('feMergeNode').attr('in', 'blur')
+    glowStrongMerge.append('feMergeNode').attr('in', 'SourceGraphic')
 
     // Marker de seta para arestas direcionadas
-    svg
-      .append('defs')
+    defs
       .append('marker')
       .attr('id', 'pg-arrow')
       .attr('viewBox', '0 -5 10 10')
@@ -306,22 +318,29 @@ export function PoliticalGraphPanel({
       .attr('d', 'M0,-5L10,0L0,5')
       .attr('fill', 'rgba(180, 192, 222, 0.7)')
 
-    // Simulation
+    const linkGroup = root.append('g').attr('class', 'pg-edges')
+    const haloGroup = root.append('g').attr('class', 'pg-halos')
+    const linkLabelGroup = root.append('g').attr('class', 'pg-edge-labels')
+    const nodeGroup = root.append('g').attr('class', 'pg-nodes')
+
+    // Simulation — força centrípeta menor + repulsão moderada + colisão
+    // generosa para evitar o look "aranha" com hub central radial.
     const simulation = d3
       .forceSimulation<SimNode>(simNodes)
+      .alphaDecay(0.018) // mais lento = animação inicial dura ~3s
       .force(
         'link',
         d3
           .forceLink<SimNode, SimEdge>(links)
           .id((d) => d.id)
-          .distance((e) => (e.isSelfLoop ? 60 : 110))
-          .strength(0.6),
+          .distance((e) => (e.isSelfLoop ? 60 : 130))
+          .strength(0.85),
       )
-      .force('charge', d3.forceManyBody<SimNode>().strength(-260))
-      .force('center', d3.forceCenter(w / 2, h / 2))
-      .force('collide', d3.forceCollide<SimNode>().radius(28))
-      .force('x', d3.forceX<SimNode>(w / 2).strength(0.04))
-      .force('y', d3.forceY<SimNode>(h / 2).strength(0.04))
+      .force('charge', d3.forceManyBody<SimNode>().strength(-180).distanceMax(420))
+      .force('center', d3.forceCenter(w / 2, h / 2).strength(0.6))
+      .force('collide', d3.forceCollide<SimNode>().radius(40).strength(0.95))
+      .force('x', d3.forceX<SimNode>(w / 2).strength(0.02))
+      .force('y', d3.forceY<SimNode>(h / 2).strength(0.02))
 
     // Edges (paths)
     const edgePaths = linkGroup
@@ -370,6 +389,11 @@ export function PoliticalGraphPanel({
       .attr('class', 'pg-node')
       .attr('data-node-id', (d) => d.id)
       .style('cursor', 'pointer')
+      // Cor da currentColor (usada por glow + halo) = cor do tipo da entidade
+      .style('color', (d) => colorForType(d.entity_type))
+      // Stagger de entrada: cada nó aparece com pequeno offset em cascata.
+      // Variável CSS lida pelo @keyframes pgNodeEnter / pgNodeBreathe.
+      .style('--enter-delay', (_, i) => `${Math.min(i * 28, 1100)}ms`)
       .on('click', (event, d) => {
         event.stopPropagation()
         const found = nodeById.get(d.id)
@@ -378,9 +402,10 @@ export function PoliticalGraphPanel({
 
     node
       .append('circle')
+      .attr('class', 'pg-node-body')
       .attr('r', 22)
       .attr('fill', (d) => colorForType(d.entity_type))
-      .attr('stroke', 'rgba(11, 16, 32, 0.85)')
+      .attr('stroke', 'rgba(7, 9, 26, 0.9)')
       .attr('stroke-width', 1.5)
 
     node
@@ -417,6 +442,11 @@ export function PoliticalGraphPanel({
         .attr('x', (d) => edgeMidpoint(d).x)
         .attr('y', (d) => edgeMidpoint(d).y)
       node.attr('transform', (d) => `translate(${d.x ?? 0},${d.y ?? 0})`)
+      // halos seguem o nó focado
+      haloGroup
+        .selectAll<SVGCircleElement, SimNode>('circle.pg-halo')
+        .attr('cx', (d) => d.x ?? 0)
+        .attr('cy', (d) => d.y ?? 0)
     })
 
     // Zoom/Pan
@@ -445,7 +475,7 @@ export function PoliticalGraphPanel({
       .style('display', showLabels ? 'block' : 'none')
   }, [showLabels])
 
-  // Aplica classes de highlight/dim conforme seleção
+  // Aplica classes de highlight/dim + halo pulsante conforme seleção
   useEffect(() => {
     if (!svgRef.current) return
     const svg = d3.select(svgRef.current)
@@ -454,10 +484,18 @@ export function PoliticalGraphPanel({
     svg.selectAll<SVGGElement, SimNode>('g.pg-node').classed('selected', false).classed('dimmed', false)
     svg.selectAll<SVGPathElement, SimEdge>('path.pg-edge').classed('highlighted', false).classed('dimmed', false)
 
+    // limpa halos antigos
+    const haloG = svg.select<SVGGElement>('g.pg-halos')
+    haloG.selectAll('*').remove()
+
     if (!sel) return
 
     if (sel.kind === 'node') {
       const focused = sel.node.id
+      const focusedNode = svg
+        .selectAll<SVGGElement, SimNode>('g.pg-node')
+        .filter((d) => d.id === focused)
+        .datum()
       svg
         .selectAll<SVGGElement, SimNode>('g.pg-node')
         .classed('selected', (d) => d.id === focused)
@@ -474,6 +512,21 @@ export function PoliticalGraphPanel({
           const tId = (d.target as SimNode).id
           return sId !== focused && tId !== focused
         })
+
+      // injeta 3 halos pulsantes (com delay diferente) atrás do nó focado
+      if (focusedNode) {
+        const color = colorForType(focusedNode.entity_type)
+        for (const cls of ['', 'delay-1', 'delay-2']) {
+          haloG
+            .append('circle')
+            .attr('class', `pg-halo ${cls}`.trim())
+            .attr('r', 22)
+            .attr('cx', focusedNode.x ?? 0)
+            .attr('cy', focusedNode.y ?? 0)
+            .style('color', color)
+            .attr('stroke', color)
+        }
+      }
     } else if (sel.kind === 'edge') {
       const eId = sel.edge.id
       svg.selectAll<SVGPathElement, SimEdge>('path.pg-edge')
