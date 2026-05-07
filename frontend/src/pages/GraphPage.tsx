@@ -1,5 +1,5 @@
 import { FormEvent, useEffect, useState } from 'react'
-import { Link } from 'react-router-dom'
+import { Link, useSearchParams } from 'react-router-dom'
 import { graphApi } from '../api/client'
 import type { GraphProjectSummary, GraphData } from '../api/client'
 import Layout from '../components/Layout'
@@ -9,6 +9,7 @@ import { SCENARIO_CATALOG } from '../scenarioCatalog'
 
 export default function GraphPage() {
   const { user } = useAuth()
+  const [searchParams] = useSearchParams()
   const [projects, setProjects] = useState<GraphProjectSummary[]>([])
   const [selectedProject, setSelectedProject] = useState<GraphData | null>(null)
   const [loading, setLoading] = useState(false)
@@ -32,6 +33,16 @@ export default function GraphPage() {
   useEffect(() => {
     if (user) loadProjects()
   }, [user]) // eslint-disable-line react-hooks/exhaustive-deps
+
+  // Auto-abre projeto quando navegamos com ?selected=ID (vindo de
+  // EvidencePage após Construir Grafo, por exemplo).
+  useEffect(() => {
+    const sel = searchParams.get('selected')
+    if (sel && (!selectedProject || selectedProject.project_id !== sel)) {
+      openProject(sel)
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [searchParams])
 
   async function loadProjects() {
     if (!user) return

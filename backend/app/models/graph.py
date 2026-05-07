@@ -20,6 +20,13 @@ class GraphProject(Base):
     status: Mapped[str] = mapped_column(String(32), nullable=False, default="pending")
     node_count: Mapped[int] = mapped_column(Integer, nullable=False, default=0)
     edge_count: Mapped[int] = mapped_column(Integer, nullable=False, default=0)
+    # Vínculo opcional com um projeto eleitoral (Fase 3). Permite ao
+    # /political/projects/{id}/graph buscar o grafo derivado das evidências.
+    political_project_id: Mapped[str | None] = mapped_column(
+        ForeignKey("political_projects.id"),
+        nullable=True,
+        index=True,
+    )
     created_at: Mapped[datetime] = mapped_column(DateTime, default=utc_now_naive, nullable=False)
     updated_at: Mapped[datetime] = mapped_column(
         DateTime, default=utc_now_naive, onupdate=utc_now_naive, nullable=False

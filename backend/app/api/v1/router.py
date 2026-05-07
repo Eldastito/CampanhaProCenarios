@@ -7,6 +7,7 @@ from app.api.v1.endpoints.chat import router as chat_router
 from app.api.v1.endpoints.graph import router as graph_router
 from app.api.v1.endpoints.health import router as health_router
 from app.api.v1.endpoints.political_evidence import router as political_evidence_router
+from app.api.v1.endpoints.political_graph import router as political_graph_router
 from app.api.v1.endpoints.political_projects import router as political_projects_router
 from app.api.v1.endpoints.predictions import router as predictions_router
 from app.api.v1.endpoints.research import router as research_router
@@ -23,6 +24,7 @@ router.include_router(backoffice_ingest_router, prefix="/backoffice", tags=["bac
 router.include_router(scenarios_router, prefix="/scenarios", tags=["scenarios"])
 router.include_router(political_projects_router, prefix="/political/projects", tags=["political-projects"])
 router.include_router(political_evidence_router, prefix="/political", tags=["political-evidence"])
+router.include_router(political_graph_router, prefix="/political", tags=["political-graph"])
 router.include_router(predictions_router, prefix="/predictions", tags=["predictions"])
 router.include_router(graph_router, prefix="/graph", tags=["graph"])
 router.include_router(simulations_router, prefix="/simulations", tags=["simulations"])

@@ -814,7 +814,7 @@ export const evidenceApi = {
     projectId: string,
     file: File,
     fields: { title: string; source_url?: string; author?: string; reliability_override?: ReliabilityLevel },
-  ) => {
+  ): Promise<PoliticalEvidenceSource> => {
     const fd = new FormData()
     fd.append('file', file)
     fd.append('title', fields.title)
@@ -840,4 +840,48 @@ export const evidenceApi = {
     return (await res.json()) as PoliticalEvidenceSource
   },
 }
+
+// ---------------------------------------------------------------------------
+// Political Graph (Fase 3 — extração de entidades/relações das evidências)
+// ---------------------------------------------------------------------------
+
+export interface PoliticalGraphBuildResult {
+  graph_project_id: string
+  name: string
+  status: string
+  node_count: number
+  edge_count: number
+  political_project_id: string | null
+}
+
+export interface PoliticalGraphData {
+  project_id: string
+  political_project_id: string
+  name: string
+  scenario_type: string
+  status: string
+  description: string | null
+  ontology: { entity_types?: string[]; relationship_types?: string[] }
+  node_count: number
+  edge_count: number
+  nodes: { id: string; entity_type: string; label: string; properties: Record<string, unknown> }[]
+  edges: {
+    id: string
+    source: string
+    target: string
+    relationship_type: string
+    properties: Record<string, unknown>
+  }[]
+}
+
+export const politicalGraphApi = {
+  build: (projectId: string) =>
+    request<PoliticalGraphBuildResult>(`/political/projects/${projectId}/graph/build`, {
+      method: 'POST',
+    }),
+
+  get: (projectId: string) =>
+    request<PoliticalGraphData>(`/political/projects/${projectId}/graph`),
+}
+
 

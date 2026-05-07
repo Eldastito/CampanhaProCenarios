@@ -3,8 +3,10 @@ import { Link, useParams } from 'react-router-dom'
 import Layout from '../components/Layout'
 import {
   evidenceApi,
+  politicalGraphApi,
   politicalProjectsApi,
   type PoliticalEvidenceSource,
+  type PoliticalGraphBuildResult,
   type PoliticalProject,
   type ReliabilityLevel,
   type ManualEvidencePayload,
@@ -40,6 +42,8 @@ export default function EvidencePage() {
   const [error, setError] = useState<string | null>(null)
   const [uploading, setUploading] = useState(false)
   const [showManualModal, setShowManualModal] = useState(false)
+  const [buildingGraph, setBuildingGraph] = useState(false)
+  const [graphResult, setGraphResult] = useState<PoliticalGraphBuildResult | null>(null)
 
   const load = useCallback(async () => {
     if (!projectId) return
@@ -80,6 +84,21 @@ export default function EvidencePage() {
     }
   }
 
+  async function buildGraph() {
+    if (!projectId) return
+    setBuildingGraph(true)
+    setError(null)
+    setGraphResult(null)
+    try {
+      const result = await politicalGraphApi.build(projectId)
+      setGraphResult(result)
+    } catch (e) {
+      setError((e as Error).message)
+    } finally {
+      setBuildingGraph(false)
+    }
+  }
+
   return (
     <Layout>
       <div className="mb-6">
@@ -106,14 +125,36 @@ export default function EvidencePage() {
 
       <DropZone disabled={uploading} onFiles={uploadFiles} />
 
-      <div className="flex justify-end mb-3 mt-4">
+      <div className="flex flex-wrap items-center justify-between gap-2 mb-3 mt-4">
         <button
           onClick={() => setShowManualModal(true)}
           className="text-sm text-brand-700 hover:underline"
         >
           + Cadastrar manualmente (texto colado ou link)
         </button>
+        <button
+          onClick={buildGraph}
+          disabled={buildingGraph || items.length === 0}
+          className="text-sm px-3 py-1.5 rounded-lg border border-brand-600 text-brand-700 hover:bg-brand-50 disabled:opacity-50 disabled:cursor-not-allowed"
+          title={items.length === 0 ? 'Suba ao menos uma evidência primeiro' : ''}
+        >
+          {buildingGraph ? '🕸 Extraindo entidades…' : '🕸 Construir grafo político'}
+        </button>
       </div>
+
+      {graphResult && (
+        <div className="mb-3 p-3 rounded-lg border border-emerald-300 bg-emerald-50 text-emerald-900 text-sm flex items-center justify-between gap-3">
+          <div>
+            Grafo <strong>{graphResult.status}</strong> — {graphResult.node_count} nós, {graphResult.edge_count} arestas.
+          </div>
+          <Link
+            to={`/graph?selected=${graphResult.graph_project_id}`}
+            className="text-emerald-800 hover:underline font-medium whitespace-nowrap"
+          >
+            Abrir →
+          </Link>
+        </div>
+      )}
 
       {loading ? (
         <p className="text-gray-500">Carregando…</p>
