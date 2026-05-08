@@ -278,6 +278,7 @@ export default function WorkspacePage() {
               onSetFilter={setFilterEntityType}
               filteredNodes={filteredNodes}
               allTypes={allTypes}
+              populatingOpinions={populatingOpinions}
             />
           ) : mode === 'split' ? (
             <SplitMode
@@ -332,7 +333,7 @@ export default function WorkspacePage() {
 // =====================================================================
 
 function GraphMode({
-  graph, selectedNode, onSelectNode, filterEntityType, onSetFilter, filteredNodes, allTypes,
+  graph, selectedNode, onSelectNode, filterEntityType, onSetFilter, filteredNodes, allTypes, populatingOpinions,
 }: {
   graph: GraphData
   selectedNode: GraphNode | null
@@ -341,6 +342,7 @@ function GraphMode({
   onSetFilter: (t: string) => void
   filteredNodes: GraphNode[]
   allTypes: string[]
+  populatingOpinions: boolean
 }) {
   return (
     <div className="h-full flex flex-col gap-2 min-h-0">
@@ -396,6 +398,7 @@ function GraphMode({
             edges={graph.edges}
             activeNodeId={selectedNode?.id ?? null}
             height="100%"
+            realtimeStatus={populatingOpinions ? 'Atualizando opiniões em tempo real…' : null}
             onNodeClick={(id) => {
               const node = graph.nodes.find((n) => n.id === id)
               onSelectNode(node ?? null)
@@ -500,6 +503,13 @@ function SplitMode({
           activeNodeId={activeNodeId}
           highlightedNodeLabels={highlightedLabels}
           height="500px"
+          realtimeStatus={
+            streamingStatus === 'generating'
+              ? 'Gerando passos da simulação…'
+              : streamingStatus === 'streaming'
+                ? 'Simulação ao vivo…'
+                : null
+          }
         />
       </div>
 
