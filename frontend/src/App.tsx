@@ -20,6 +20,7 @@ import PoliticalAgentsPage from './pages/PoliticalAgentsPage'
 import PoliticalGraphPage from './pages/PoliticalGraphPage'
 import DossiersPage from './pages/DossiersPage'
 import DossierDetailPage from './pages/DossierDetailPage'
+import ElectionProbabilityPage from './pages/ElectionProbabilityPage'
 
 export default function App() {
   return (
@@ -41,6 +42,10 @@ export default function App() {
             <Route
               path="/political/projects/:projectId/dossiers/:dossierId"
               element={<DossierDetailPage />}
+            />
+            <Route
+              path="/political/projects/:projectId/election-probability"
+              element={<ElectionProbabilityPage />}
             />
             <Route path="/scenarios/new" element={<CreateScenarioPage />} />
             <Route path="/scenarios/:id" element={<ScenarioDetailPage />} />

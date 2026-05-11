@@ -49,7 +49,11 @@ export default function ComparePage() {
       <div className="flex items-center justify-between mb-8">
         <div>
           <h1 className="text-2xl font-bold text-gray-900">Comparar Cenários</h1>
-          <p className="text-gray-500 mt-1">Analise dois cenários lado a lado.</p>
+          <p className="text-gray-500 mt-1">
+            Analise dois cenários lado a lado. Para comparar <em>N candidatos</em>{' '}
+            simultaneamente com Monte Carlo, abra o projeto eleitoral correspondente
+            em <strong>Projetos</strong> → 🎲 <em>Probabilidade</em>.
+          </p>
         </div>
         <button
           onClick={loadScenarios}

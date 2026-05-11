@@ -27,6 +27,7 @@ celery_app = Celery(
     include=[
         "app.workers.snapshot_tasks",
         "app.workers.dossier_tasks",
+        "app.workers.election_tasks",
     ],
 )
 

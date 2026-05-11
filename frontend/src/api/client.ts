@@ -914,6 +914,87 @@ export const dossiersApi = {
 }
 
 // ---------------------------------------------------------------------------
+// Election Probability — Monte Carlo (Fase 4 PRD v2)
+// ---------------------------------------------------------------------------
+
+export type ElectionStatus = 'queued' | 'running' | 'completed' | 'failed'
+
+export interface ElectionCandidateInput {
+  name: string
+  factors: Record<string, number>
+  confidence: number
+}
+
+export interface ElectionResultItem {
+  candidate_name: string
+  win_probability: number
+  win_first_round_probability: number
+  mean_share_first_round: number
+  share_ci_95_first_round: [number, number]
+  second_round_qualification_probability: number | null
+  second_round_win_given_qualified: number | null
+  input_confidence: number
+}
+
+export interface ElectionProbabilityResult {
+  id: string
+  organization_id: string
+  political_project_id: string
+  requested_by: string | null
+  office: string
+  iterations: number
+  seed: number | null
+  status: ElectionStatus
+  error_message: string | null
+  input_candidates: Array<Record<string, unknown>>
+  output_results: ElectionResultItem[]
+  confidence_level: string
+  created_at: string
+  completed_at: string | null
+}
+
+export interface ElectionProbabilitySummary {
+  id: string
+  office: string
+  iterations: number
+  status: ElectionStatus
+  confidence_level: string
+  created_at: string
+  completed_at: string | null
+}
+
+export interface ElectionProbabilityCreatePayload {
+  office: string
+  candidates: ElectionCandidateInput[]
+  iterations?: number | null
+  seed?: number | null
+  two_rounds?: boolean | null
+}
+
+export interface ElectionQueuedResponse {
+  result_id: string
+  status: ElectionStatus
+}
+
+export const electionProbabilityApi = {
+  list: (projectId: string) =>
+    request<ElectionProbabilitySummary[]>(
+      `/political/projects/${projectId}/election-probability`,
+    ),
+
+  get: (projectId: string, resultId: string) =>
+    request<ElectionProbabilityResult>(
+      `/political/projects/${projectId}/election-probability/${resultId}`,
+    ),
+
+  create: (projectId: string, body: ElectionProbabilityCreatePayload) =>
+    request<ElectionQueuedResponse>(
+      `/political/projects/${projectId}/election-probability`,
+      { method: 'POST', body: JSON.stringify(body) },
+    ),
+}
+
+// ---------------------------------------------------------------------------
 // Political Evidence (Fase 2 — ingestão de evidências)
 // ---------------------------------------------------------------------------
 

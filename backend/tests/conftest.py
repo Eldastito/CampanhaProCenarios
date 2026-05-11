@@ -51,6 +51,7 @@ def _shared_engine(monkeypatch):
     monkeypatch.setattr("app.db.session.SessionLocal", SessionLocal)
     monkeypatch.setattr("app.workers.snapshot_tasks.SessionLocal", SessionLocal)
     monkeypatch.setattr("app.workers.dossier_tasks.SessionLocal", SessionLocal)
+    monkeypatch.setattr("app.workers.election_tasks.SessionLocal", SessionLocal)
 
     with SessionLocal() as session:
         session.add(
