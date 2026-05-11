@@ -1,6 +1,7 @@
 import { FormEvent, useEffect, useState } from 'react'
 import { Link, useParams, useSearchParams } from 'react-router-dom'
 import Layout from '../components/Layout'
+import ExportReportButton from '../components/ExportReportButton'
 import {
   ElectionCandidateInput,
   ElectionProbabilityResult,
@@ -326,6 +327,7 @@ export default function ElectionProbabilityPage() {
         <ResultBlock
           result={activeResult}
           resultId={activeResultId}
+          projectId={projectId}
           onReload={() =>
             electionProbabilityApi
               .get(projectId, activeResultId)
@@ -433,10 +435,12 @@ function CandidateBlock({
 function ResultBlock({
   result,
   resultId,
+  projectId,
   onReload,
 }: {
   result: ElectionProbabilityResult | null
   resultId: string
+  projectId: string
   onReload: () => void
 }) {
   if (!result) {
@@ -484,9 +488,19 @@ function ResultBlock({
         <h2 className="text-base font-semibold text-gray-900">
           Resultado · {result.iterations.toLocaleString('pt-BR')} iterações
         </h2>
-        <span className="text-[11px] uppercase tracking-wide bg-gray-100 text-gray-600 px-2 py-0.5 rounded">
-          confiança {result.confidence_level}
-        </span>
+        <div className="flex items-center gap-2">
+          <span className="text-[11px] uppercase tracking-wide bg-gray-100 text-gray-600 px-2 py-0.5 rounded">
+            confiança {result.confidence_level}
+          </span>
+          <ExportReportButton
+            projectId={projectId}
+            allowedTypes={['candidate_comparison']}
+            defaultType="candidate_comparison"
+            context={{ election_result_id: resultId }}
+            label="📄 Exportar"
+            compact
+          />
+        </div>
       </div>
       <div className="space-y-3">
         {sorted.map((r) => (

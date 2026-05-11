@@ -976,6 +976,58 @@ export interface ElectionQueuedResponse {
   status: ElectionStatus
 }
 
+// ---------------------------------------------------------------------------
+// Reports (Fase 5 PRD v2 — PDF/DOCX com branding)
+// ---------------------------------------------------------------------------
+
+export type ReportType =
+  | 'executive_summary'
+  | 'factor_deep_dive'
+  | 'candidate_comparison'
+  | 'scenario_what_if'
+  | 'compliance_audit'
+  | 'dossier_export'
+
+export type ReportFormat = 'pdf' | 'docx'
+
+export interface ReportRequestBody {
+  type: ReportType
+  format: ReportFormat
+  context?: Record<string, unknown>
+}
+
+export const reportsApi = {
+  /**
+   * Faz POST esperando blob binário (PDF ou DOCX). Lança Error com a mensagem
+   * do servidor quando 4xx/5xx (ex: 503 se PDF indisponível, 400 se faltar
+   * scenario_id/dossier_id no context).
+   */
+  generate: async (projectId: string, body: ReportRequestBody): Promise<Blob> => {
+    const token = localStorage.getItem('fsl_token')
+    const res = await fetch(`${BASE}/political/projects/${projectId}/reports`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        ...(token ? { Authorization: `Bearer ${token}` } : {}),
+      },
+      body: JSON.stringify(body),
+    })
+    if (!res.ok) {
+      let detail = `HTTP ${res.status}`
+      try {
+        const j = await res.json()
+        detail = typeof j.detail === 'string' ? j.detail : JSON.stringify(j.detail)
+      } catch {
+        // ignore
+      }
+      throw new Error(detail)
+    }
+    return res.blob()
+  },
+}
+
+// ---------------------------------------------------------------------------
+
 export const electionProbabilityApi = {
   list: (projectId: string) =>
     request<ElectionProbabilitySummary[]>(

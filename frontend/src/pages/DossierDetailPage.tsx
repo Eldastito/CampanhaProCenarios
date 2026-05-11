@@ -1,6 +1,7 @@
 import { FormEvent, useEffect, useMemo, useState } from 'react'
 import { Link, useNavigate, useParams, useSearchParams } from 'react-router-dom'
 import Layout from '../components/Layout'
+import ExportReportButton from '../components/ExportReportButton'
 import {
   CandidateDossier,
   DossierSocialSnapshot,
@@ -188,6 +189,13 @@ export default function DossierDetailPage() {
           </p>
         </div>
         <div className="flex gap-2">
+          <ExportReportButton
+            projectId={projectId}
+            allowedTypes={['dossier_export']}
+            defaultType="dossier_export"
+            context={{ dossier_id: dossierId }}
+            label="📄 Exportar"
+          />
           <button
             onClick={handleRefresh}
             disabled={refreshing}

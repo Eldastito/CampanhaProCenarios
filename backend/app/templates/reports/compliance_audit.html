@@ -1,0 +1,28 @@
+{% extends "_base.html" %}
+{% block content %}
+  <h2>Auditoria de Compliance</h2>
+  <p class="meta">{{ alerts|length }} alerta(s) aberto(s) na campanha.</p>
+
+  {% if alerts %}
+  <table>
+    <tr>
+      <th>Severidade</th>
+      <th>Tipo</th>
+      <th>Mensagem</th>
+      <th>Status</th>
+      <th>Quando</th>
+    </tr>
+    {% for a in alerts %}
+    <tr>
+      <td><span class="badge badge-{{ 'high' if a.severity in ('high','critical') else 'medium' if a.severity == 'medium' else 'low' }}">{{ a.severity }}</span></td>
+      <td>{{ a.alert_type }}</td>
+      <td>{{ a.message }}</td>
+      <td>{{ a.status }}</td>
+      <td class="meta">{{ a.created_at }}</td>
+    </tr>
+    {% endfor %}
+  </table>
+  {% else %}
+  <p>Nenhum alerta aberto.</p>
+  {% endif %}
+{% endblock %}

@@ -1,0 +1,36 @@
+{% extends "_base.html" %}
+{% block content %}
+  <h2>Comparação de Candidatos — Monte Carlo</h2>
+  <p class="meta">
+    {{ iterations|default(0) }} iterações
+    {% if seed is not none %} · seed: {{ seed }}{% endif %}
+    · 2 turnos: {{ 'sim' if two_rounds else 'não' }}
+  </p>
+
+  <table>
+    <tr>
+      <th>Candidato</th>
+      <th>Prob. vitória</th>
+      <th>Share médio 1º turno</th>
+      <th>IC 95%</th>
+      {% if two_rounds %}<th>Qualif. 2º</th>{% endif %}
+    </tr>
+    {% for r in results %}
+    <tr>
+      <td><strong>{{ r.candidate_name }}</strong></td>
+      <td>
+        {% if r.win_probability >= 0.95 %}≥95%
+        {% elif r.win_probability <= 0.05 %}≤5%
+        {% else %}{{ '%.1f' % (r.win_probability * 100) }}%{% endif %}
+      </td>
+      <td>{{ '%.1f' % (r.mean_share_first_round * 100) }}%</td>
+      <td>{{ '%.1f' % (r.share_ci_95_first_round[0] * 100) }}% – {{ '%.1f' % (r.share_ci_95_first_round[1] * 100) }}%</td>
+      {% if two_rounds %}
+      <td>{% if r.second_round_qualification_probability is not none %}{{ '%.0f' % (r.second_round_qualification_probability * 100) }}%{% else %}—{% endif %}</td>
+      {% endif %}
+    </tr>
+    {% endfor %}
+  </table>
+
+  <p class="meta">Probabilidade é estimativa estatística baseada nos fatores informados. Não é predição de resultado eleitoral.</p>
+{% endblock %}

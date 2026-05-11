@@ -1,0 +1,45 @@
+{% extends "_base.html" %}
+{% block content %}
+  <h2>Resumo Executivo</h2>
+  <p>
+    Síntese da campanha em uma página. Confiança global:
+    <span class="badge badge-{{ confidence_class }}">{{ confidence_level|upper }}</span>
+  </p>
+
+  <table>
+    <tr>
+      <th>Score atual</th>
+      <th>Probabilidade de vitória</th>
+      <th>Cobertura de dados reais</th>
+    </tr>
+    <tr>
+      <td>{{ score_atual|default('—') }}</td>
+      <td>{{ win_probability|default('—') }}</td>
+      <td>{{ coverage_percent|default('—') }}%</td>
+    </tr>
+  </table>
+
+  <h3>Top 3 forças</h3>
+  {% if forces %}
+  <ul class="tight">
+    {% for f in forces %}<li>{{ f.label }} — {{ f.value }}/100</li>{% endfor %}
+  </ul>
+  {% else %}<p class="meta">Sem dados suficientes.</p>{% endif %}
+
+  <h3>Top 3 fraquezas</h3>
+  {% if weaknesses %}
+  <ul class="tight">
+    {% for f in weaknesses %}<li>{{ f.label }} — {{ f.value }}/100 — {{ f.hint }}</li>{% endfor %}
+  </ul>
+  {% else %}<p class="meta">Sem dados suficientes.</p>{% endif %}
+
+  <h3>Próxima ação sugerida</h3>
+  <p>{{ next_action|default('Defina o cenário base preenchendo os 12 fatores.') }}</p>
+
+  {% if alerts %}
+  <h3>Alertas de compliance abertos ({{ alerts|length }})</h3>
+  <ul class="tight">
+    {% for a in alerts[:5] %}<li><strong>{{ a.alert_type }}</strong> — {{ a.message }}</li>{% endfor %}
+  </ul>
+  {% endif %}
+{% endblock %}

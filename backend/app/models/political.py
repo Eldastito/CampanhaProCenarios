@@ -50,6 +50,13 @@ class PoliticalProject(Base):
 
     status: Mapped[str] = mapped_column(String(32), nullable=False, default="draft")
 
+    # Fase 5 PRD v2 — branding usado em relatórios PDF/DOCX. Populado
+    # automaticamente pelo mapper da Fase 2 a partir de campaign.details
+    # do snapshot v1; pode ser sobrescrito manualmente via PATCH do projeto.
+    header_logo_url: Mapped[str | None] = mapped_column(String(1000), nullable=True)
+    footer_logo_url: Mapped[str | None] = mapped_column(String(1000), nullable=True)
+    candidate_photo_url: Mapped[str | None] = mapped_column(String(1000), nullable=True)
+
     created_by: Mapped[str | None] = mapped_column(String(64), nullable=True)
     created_at: Mapped[datetime] = mapped_column(DateTime, default=utc_now_naive, nullable=False)
     updated_at: Mapped[datetime] = mapped_column(

@@ -209,6 +209,12 @@ function ProjectCard({ project }: { project: PoliticalProject }) {
         >
           🎲 Probabilidade
         </Link>
+        <Link
+          to={`/political/projects/${project.id}/dashboard`}
+          className="text-xs text-brand-700 hover:underline"
+        >
+          📊 Dashboard
+        </Link>
       </div>
     </div>
   )

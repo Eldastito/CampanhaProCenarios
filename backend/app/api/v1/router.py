@@ -6,6 +6,7 @@ from app.api.v1.endpoints.campanhapro_ingest import router as campanhapro_ingest
 from app.api.v1.endpoints.chat import router as chat_router
 from app.api.v1.endpoints.dossiers import router as dossiers_router
 from app.api.v1.endpoints.election_probability import router as election_probability_router
+from app.api.v1.endpoints.reports import router as reports_router
 from app.api.v1.endpoints.graph import router as graph_router
 from app.api.v1.endpoints.health import router as health_router
 from app.api.v1.endpoints.political_agents import router as political_agents_router
@@ -31,6 +32,11 @@ router.include_router(
     election_probability_router,
     prefix="/political/projects/{project_id}/election-probability",
     tags=["election-probability"],
+)
+router.include_router(
+    reports_router,
+    prefix="/political/projects/{project_id}/reports",
+    tags=["reports"],
 )
 router.include_router(political_evidence_router, prefix="/political", tags=["political-evidence"])
 router.include_router(political_graph_router, prefix="/political", tags=["political-graph"])
