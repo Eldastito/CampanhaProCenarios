@@ -65,6 +65,34 @@ services:
       sh -c "alembic -c alembic/alembic.ini upgrade head &&
       uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload"
 
+  worker:
+    build:
+      context: ./backend
+    environment:
+      APP_NAME: CampanhaPro Cenários Worker
+      APP_ENV: development
+      APP_DEBUG: "true"
+      POSTGRES_HOST: postgres
+      POSTGRES_PORT: "5432"
+      POSTGRES_DB: campanha_pro_cenarios
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      REDIS_URL: redis://redis:6379/0
+      CAMPANHAPRO_INGEST_SHARED_SECRET: dev-campanhapro-secret
+      INTERNAL_API_KEY: dev-internal-key
+      JWT_SECRET_KEY: dev-jwt-secret
+      OPENAI_API_KEY: ${OPENAI_API_KEY:-}
+      ANTHROPIC_API_KEY: ${ANTHROPIC_API_KEY:-}
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    volumes:
+      - ./backend:/app
+      - evidence_storage:/app/storage
+    command: celery -A app.workers.celery_app worker --loglevel=info --concurrency=2
+
   frontend:
     build:
       context: ./frontend

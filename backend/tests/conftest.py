@@ -37,12 +37,20 @@ def _shared_engine(monkeypatch):
     ORM lia outro, e asserts cruzados ficavam invisíveis. A organização
     ``org_demo_001`` é semeada aqui uma única vez por teste para evitar
     colisão de UNIQUE quando ambas as fixtures forem solicitadas.
+
+    Também repatcheia ``app.db.session.SessionLocal`` para usar este engine,
+    permitindo que workers Celery (eager mode na Fase 2 PRD v2) abram
+    sessão própria sem cair no Postgres de produção.
     """
     engine = _make_engine()
     Base.metadata.create_all(bind=engine)
     monkeypatch.setattr(BootstrapService, "initialize", staticmethod(lambda: None))
 
     SessionLocal = sessionmaker(bind=engine, autoflush=False, autocommit=False)
+    # Patch das duas referências que workers podem importar.
+    monkeypatch.setattr("app.db.session.SessionLocal", SessionLocal)
+    monkeypatch.setattr("app.workers.snapshot_tasks.SessionLocal", SessionLocal)
+
     with SessionLocal() as session:
         session.add(
             Organization(
@@ -55,6 +63,15 @@ def _shared_engine(monkeypatch):
 
     yield engine
     Base.metadata.drop_all(bind=engine)
+
+
+@pytest.fixture(autouse=True)
+def _celery_eager(monkeypatch):
+    """Celery roda síncrono em testes — sem broker, sem worker."""
+    from app.workers.celery_app import celery_app
+
+    monkeypatch.setattr(celery_app.conf, "task_always_eager", True)
+    monkeypatch.setattr(celery_app.conf, "task_eager_propagates", True)
 
 
 @pytest.fixture()

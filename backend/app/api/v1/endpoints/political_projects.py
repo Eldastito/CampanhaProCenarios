@@ -16,10 +16,12 @@ from app.db.session import get_db
 from app.deps.auth import require_analyst
 from app.models.political import PoliticalAuditLog, PoliticalProject
 from app.models.user import User
+from app.repositories.factor_cache_repository import CampanhaProFactorCacheRepository
 from app.repositories.political_repository import (
     PoliticalAuditLogRepository,
     PoliticalProjectRepository,
 )
+from app.schemas.factor_cache import LatestFactorsResponse
 from app.schemas.political import (
     PoliticalProjectCreate,
     PoliticalProjectResponse,
@@ -212,6 +214,37 @@ def update_project(
     )
 
     return PoliticalProjectResponse.model_validate(saved)
+
+
+@router.get(
+    "/{project_id}/latest-factors",
+    response_model=LatestFactorsResponse,
+    summary="Último cache de fatores derivado de snapshot CampanhaPro v1",
+)
+def get_latest_factors(
+    project_id: str,
+    db: Session = Depends(get_db),
+    user: User = Depends(require_analyst),
+) -> LatestFactorsResponse:
+    project = PoliticalProjectRepository(db).get_by_id(project_id)
+    if project is None:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Projeto não encontrado.")
+    _ensure_same_org(project, user)
+
+    cache_repo = CampanhaProFactorCacheRepository(db)
+    # Tenta primeiro pelo project_id (FK direta); cai pra campaign_id
+    # quando o mapper rodou antes do projeto existir / sem FK setada.
+    cache = cache_repo.latest_for_project(user.organization_id, project.id)
+    if cache is None:
+        cache = cache_repo.latest_for_campaign(user.organization_id, project.campaign_id)
+
+    if cache is None:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Nenhum snapshot CampanhaPro v1 processado para esta campanha ainda.",
+        )
+
+    return LatestFactorsResponse.model_validate(cache)
 
 
 @router.delete(

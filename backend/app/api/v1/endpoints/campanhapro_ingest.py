@@ -31,6 +31,7 @@ from app.schemas.ingest import (
     IngestAcceptedResponse,
     SnapshotV1Payload,
 )
+from app.workers.snapshot_tasks import process_snapshot_factors
 
 logger = logging.getLogger(__name__)
 router = APIRouter()
@@ -112,6 +113,16 @@ def ingest_campanhapro_snapshots(
 
     if created:
         logger.info("campanhapro_snapshot_persisted", extra={**log_extra, "request_id": str(request_uuid)})
+        # Despacha mapper para Celery (Fase 2). Em testes roda síncrono
+        # via task_always_eager. Só faz sentido para v1 — o worker
+        # ignora snapshots legados sem campaign_id.
+        if is_v1:
+            try:
+                process_snapshot_factors.delay(snapshot.id)
+            except Exception:  # noqa: BLE001
+                # Não falhar o request se o broker estiver indisponível;
+                # o snapshot já está persistido e pode ser reprocessado.
+                logger.exception("celery_dispatch_failed", extra={"snapshot_id": snapshot.id})
     else:
         logger.info("campanhapro_snapshot_duplicate_ignored", extra={**log_extra, "request_id": str(request_uuid)})
 

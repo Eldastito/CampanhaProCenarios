@@ -678,6 +678,7 @@ export const chatApi = {
 export interface PoliticalProject {
   id: string
   organization_id: string
+  campaign_id: string
   name: string
   description: string | null
   election_year: number
@@ -698,6 +699,7 @@ export interface PoliticalProject {
 
 export interface PoliticalProjectCreatePayload {
   organization_id: string
+  campaign_id?: string
   name: string
   description?: string | null
   election_year: number
@@ -710,6 +712,19 @@ export interface PoliticalProjectCreatePayload {
   objective?: string | null
   horizon_start?: string | null
   horizon_end?: string | null
+}
+
+// Cache de fatores derivado de snapshots CampanhaPro v1 (Fase 2 PRD v2).
+export interface LatestFactorsResponse {
+  snapshot_id: string
+  campaign_id: string
+  political_project_id: string | null
+  reference_date: string
+  factors: Record<string, number>
+  coverage_percent: number
+  sources_used: Record<string, string[]>
+  warnings: string[]
+  created_at: string
 }
 
 export interface PoliticalProjectUpdatePayload {
@@ -749,6 +764,11 @@ export const politicalProjectsApi = {
     }).then((res) => {
       if (!res.ok && res.status !== 204) throw new Error(`HTTP ${res.status}`)
     }),
+
+  // Fase 2 PRD v2 — último cache de fatores derivado de snapshot CampanhaPro v1.
+  // 404 quando ainda não há snapshot processado para a campanha do projeto.
+  getLatestFactors: (id: string) =>
+    request<LatestFactorsResponse>(`/political/projects/${id}/latest-factors`),
 }
 
 // ---------------------------------------------------------------------------
