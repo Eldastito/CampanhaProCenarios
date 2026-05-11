@@ -21,6 +21,7 @@ from sqlalchemy.orm import Session
 
 from app.db.session import SessionLocal
 from app.models.campanhapro_ingest import CampanhaProSnapshot
+from app.models.dossier import CandidateDossier, DossierSocialSnapshot
 from app.models.factor_cache import CampanhaProFactorCache
 from app.models.political import PoliticalAuditLog, PoliticalProject
 from app.repositories.factor_cache_repository import CampanhaProFactorCacheRepository
@@ -53,6 +54,49 @@ def _audit(
     db.commit()
 
 
+def _own_dossier_context(db: Session, snapshot: CampanhaProSnapshot) -> dict | None:
+    """Coleta dados do dossiê próprio para alimentar digital_sentiment e
+    media_coverage no mapper. Retorna None quando não há dossiê 'own' pronto."""
+    project = (
+        db.query(PoliticalProject)
+        .filter(
+            PoliticalProject.organization_id == snapshot.organization_id,
+            PoliticalProject.campaign_id == snapshot.campaign_id,
+        )
+        .order_by(PoliticalProject.created_at.asc())
+        .first()
+    )
+    if project is None:
+        return None
+    dossier = (
+        db.query(CandidateDossier)
+        .filter(
+            CandidateDossier.political_project_id == project.id,
+            CandidateDossier.candidate_type == "own",
+            CandidateDossier.status == "ready",
+        )
+        .order_by(CandidateDossier.last_refreshed_at.desc().nullslast())
+        .first()
+    )
+    if dossier is None:
+        return None
+    snaps = (
+        db.query(DossierSocialSnapshot)
+        .filter(DossierSocialSnapshot.dossier_id == dossier.id)
+        .all()
+    )
+    return {
+        "social_snapshots": [
+            {
+                "platform": s.platform,
+                "sentiment_distribution": s.sentiment_distribution or {},
+            }
+            for s in snaps
+        ],
+        "recent_news": dossier.recent_news or [],
+    }
+
+
 def _process(db: Session, snapshot_id: str) -> str:
     snapshot = (
         db.query(CampanhaProSnapshot)
@@ -78,7 +122,8 @@ def _process(db: Session, snapshot_id: str) -> str:
         logger.info("factor_cache_already_present", extra={"snapshot_id": snapshot.id})
         return "already_cached"
 
-    result = map_snapshot_to_factors(snapshot.payload or {})
+    own_dossier_context = _own_dossier_context(db, snapshot)
+    result = map_snapshot_to_factors(snapshot.payload or {}, own_dossier=own_dossier_context)
 
     # Encontra o projeto associado a essa campanha para popular FK opcional.
     project = (

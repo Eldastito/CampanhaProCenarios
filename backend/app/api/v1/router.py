@@ -4,6 +4,7 @@ from app.api.v1.endpoints.auth import router as auth_router
 from app.api.v1.endpoints.backoffice_ingest import router as backoffice_ingest_router
 from app.api.v1.endpoints.campanhapro_ingest import router as campanhapro_ingest_router
 from app.api.v1.endpoints.chat import router as chat_router
+from app.api.v1.endpoints.dossiers import router as dossiers_router
 from app.api.v1.endpoints.graph import router as graph_router
 from app.api.v1.endpoints.health import router as health_router
 from app.api.v1.endpoints.political_agents import router as political_agents_router
@@ -24,6 +25,7 @@ router.include_router(campanhapro_ingest_router, prefix="/campanhapro", tags=["c
 router.include_router(backoffice_ingest_router, prefix="/backoffice", tags=["backoffice-ingest"])
 router.include_router(scenarios_router, prefix="/scenarios", tags=["scenarios"])
 router.include_router(political_projects_router, prefix="/political/projects", tags=["political-projects"])
+router.include_router(dossiers_router, prefix="/political/projects/{project_id}/dossiers", tags=["dossiers"])
 router.include_router(political_evidence_router, prefix="/political", tags=["political-evidence"])
 router.include_router(political_graph_router, prefix="/political", tags=["political-graph"])
 router.include_router(political_agents_router, prefix="/political", tags=["political-agents"])

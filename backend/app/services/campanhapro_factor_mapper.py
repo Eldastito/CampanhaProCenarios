@@ -14,11 +14,11 @@ Tabela de mapeamento (resumo do PRD §2.1):
 | territorial_strength  | teamMembers + locations              | (locations com líder ativo / total locations) × 100                          |
 | alliances             | teamMembers (role=liderPolitico)     | nº líderes políticos ativos × 10 (cap 100)                                   |
 | mobilization          | visits + engagementActions (30d)     | (eventos + visitas + ações) / meta declarada × 100 (cap 100)                 |
-| digital_sentiment     | dossiê (Fase 3)                      | **fora deste mapper na v1** — ver dossier_orchestrator                       |
+| digital_sentiment     | dossiê próprio (Fase 3b)             | sentiment_distribution dos snapshots sociais → score 0-100                   |
 | local_agenda_fit      | streetReports                        | 100 − (negativos / total × 100)                                              |
 | reputation_risk       | streetReports + neighborhoodFlags    | (negativos + alertas) / total × 100                                          |
 | operational_efficiency| fieldTickets                         | (concluídos / total) × 100                                                   |
-| media_coverage        | dossiê (Fase 3)                      | **fora deste mapper na v1**                                                  |
+| media_coverage        | dossiê próprio (Fase 3b)             | contagem positiva em recent_news (últimos 30d) → score 0-100                 |
 | declared_funding      | financial.incomes vs metaArrecadacao | (arrecadado / meta) × 100 (cap 100)                                          |
 
 Identidade do candidato próprio: assume-se ``campaign.details.nomeUrna``
@@ -217,6 +217,62 @@ def _factor_operational_efficiency(field_tickets: list[dict]) -> float | None:
     return _clip(100.0 * concluidos / len(field_tickets))
 
 
+def _factor_digital_sentiment(own_dossier: dict | None) -> float | None:
+    """Score 0-100 a partir de ``sentiment_distribution`` agregado.
+
+    Espera ``own_dossier['social_snapshots']`` como lista de
+    ``{platform, sentiment_distribution: {positive, neutral, negative}}``.
+    O cálculo é positivo - negativo, normalizado para 0-100 (com 50 = neutro).
+    """
+    if not own_dossier:
+        return None
+    snapshots = own_dossier.get("social_snapshots") or []
+    if not snapshots:
+        return None
+    pos = neg = neu = 0.0
+    for snap in snapshots:
+        dist = (snap or {}).get("sentiment_distribution") or {}
+        pos += _safe_float(dist.get("positive"))
+        neg += _safe_float(dist.get("negative"))
+        neu += _safe_float(dist.get("neutral"))
+    total = pos + neg + neu
+    if total <= 0:
+        return None
+    # (pos - neg) / total ∈ [-1, 1] → mapeia para [0, 100]
+    score = 50.0 + 50.0 * (pos - neg) / total
+    return _clip(score)
+
+
+def _factor_media_coverage(
+    own_dossier: dict | None, generated_at: datetime
+) -> float | None:
+    """Score 0-100 a partir de ``recent_news`` do dossiê próprio.
+
+    Conta itens com sentimento positivo nos últimos 30 dias. Quando o item
+    não traz sentimento, é tratado como neutro. Score = (positivos / total) × 100.
+    """
+    if not own_dossier:
+        return None
+    news = own_dossier.get("recent_news") or []
+    if not news:
+        return None
+    cutoff = generated_at - timedelta(days=30)
+    recent = []
+    for item in news:
+        published = _parse_iso((item or {}).get("published_at"))
+        if published is None or published >= cutoff:
+            recent.append(item)
+    if not recent:
+        return None
+    positives = sum(
+        1
+        for item in recent
+        if _norm((item or {}).get("sentiment")) == "positive"
+        or _norm((item or {}).get("sentiment")) == "positivo"
+    )
+    return _clip(100.0 * positives / len(recent))
+
+
 def _factor_declared_funding(
     incomes: list[dict], calculator_settings: dict
 ) -> float | None:
@@ -232,12 +288,27 @@ def _factor_declared_funding(
 # ---------------------------------------------------------------------------
 
 
-def map_snapshot_to_factors(snapshot_payload: dict[str, Any]) -> dict[str, Any]:
+def map_snapshot_to_factors(
+    snapshot_payload: dict[str, Any],
+    own_dossier: dict[str, Any] | None = None,
+) -> dict[str, Any]:
     """Transforma um snapshot v1 nos 12 fatores eleitorais.
 
     Retorna ``{factors, coverage_percent, sources_used, warnings}``.
     Apenas fatores com dado real entram em ``factors``. ``coverage_percent``
     é a fração desses fatores sobre os 12 totais.
+
+    ``own_dossier`` (opcional, Fase 3b) habilita os 2 fatores que
+    dependem de pesquisa externa: ``digital_sentiment`` (de
+    ``social_snapshots``) e ``media_coverage`` (de ``recent_news``).
+    Estrutura esperada::
+
+        {
+            "social_snapshots": [
+                {"platform": "...", "sentiment_distribution": {"positive": ..., "neutral": ..., "negative": ...}}
+            ],
+            "recent_news": [{"published_at": "ISO", "sentiment": "positive|neutral|negative"}]
+        }
     """
     if snapshot_payload.get("schemaVersion") != "campanhapro.snapshot.v1":
         return {
@@ -282,7 +353,8 @@ def map_snapshot_to_factors(snapshot_payload: dict[str, Any]) -> dict[str, Any]:
         ("reputation_risk", _factor_reputation_risk(street_reports, neighborhood_flags), ["streetReports", "neighborhoodFlags"]),
         ("operational_efficiency", _factor_operational_efficiency(field_tickets), ["fieldTickets.status"]),
         ("declared_funding", _factor_declared_funding(incomes, calculator_settings), ["financial.incomes", "calculatorSettings.metaArrecadacao"]),
-        # digital_sentiment e media_coverage só são preenchidos pela Fase 3 (dossiê).
+        ("digital_sentiment", _factor_digital_sentiment(own_dossier), ["dossier.social_snapshots.sentiment_distribution"]),
+        ("media_coverage", _factor_media_coverage(own_dossier, generated_at), ["dossier.recent_news"]),
     ]
 
     factors: dict[str, float] = {}

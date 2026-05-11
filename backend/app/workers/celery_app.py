@@ -26,6 +26,7 @@ celery_app = Celery(
     backend=_backend,
     include=[
         "app.workers.snapshot_tasks",
+        "app.workers.dossier_tasks",
     ],
 )
 
