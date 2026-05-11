@@ -62,7 +62,10 @@ _SOCIAL_DOMAINS = (
 )
 
 _REGISTERED_POLL_HINTS = re.compile(
-    r"\b(registr[oa] tse|nº? *tse-\d|registro nº?|cnpj.*pesquisa)\b",
+    # Casa indícios de pesquisa registrada no TSE em variações comuns:
+    # "TSE-12345", "nº TSE-12345", "registrada no TSE-12345/2026",
+    # "registro nº", "CNPJ ... pesquisa".
+    r"\b(?:registr[oa]\w*[\w\s]{0,10}tse|(?:nº?\s*)?tse-\d|registro\s+nº?|cnpj.*pesquisa)\b",
     flags=re.IGNORECASE,
 )
 
