@@ -1,0 +1,41 @@
+{% extends "_base.html" %}
+{% block content %}
+  <h2>Cenário What-If — {{ scenario.name }}</h2>
+  {% if scenario.description %}<p>{{ scenario.description }}</p>{% endif %}
+
+  <table>
+    <tr><th>Métrica</th><th>Baseline</th><th>Alternativo</th><th>Delta</th></tr>
+    <tr>
+      <td>Score</td>
+      <td>{{ scenario.baseline_score|default('—') }}</td>
+      <td>{{ scenario.alternative_score|default('—') }}</td>
+      <td>{{ scenario.delta|default('—') }}</td>
+    </tr>
+    <tr>
+      <td>Confiança</td>
+      <td colspan="3">
+        <span class="badge badge-{{ confidence_class }}">{{ scenario.confidence_level|default('medium')|upper }}</span>
+      </td>
+    </tr>
+  </table>
+
+  <h3>Decomposição por fator</h3>
+  <table>
+    <tr><th>Fator</th><th>Baseline</th><th>Alternativo</th><th>Direção</th></tr>
+    {% for f in factor_breakdown %}
+    <tr>
+      <td>{{ f.label }}</td>
+      <td>{{ f.baseline_value|default('—') }}</td>
+      <td>{{ f.alternative_value|default('—') }}</td>
+      <td>{{ f.direction|default('—') }}</td>
+    </tr>
+    {% endfor %}
+  </table>
+
+  {% if recommendations %}
+  <h3>Recomendações</h3>
+  <ul class="tight">
+    {% for r in recommendations %}<li><strong>{{ r.title }}</strong>: {{ r.detail }}</li>{% endfor %}
+  </ul>
+  {% endif %}
+{% endblock %}

@@ -28,6 +28,15 @@ class PoliticalProjectBase(BaseModel):
 
 class PoliticalProjectCreate(PoliticalProjectBase):
     organization_id: str = Field(..., max_length=64)
+    campaign_id: str | None = Field(
+        default=None,
+        max_length=64,
+        description=(
+            "ID externo da campanha no CampanhaPro. Se omitido, usa o id do "
+            "próprio projeto (1 projeto = 1 campanha). Obrigatório para "
+            "vincular snapshots e dossiês a campanhas existentes."
+        ),
+    )
 
 
 class PoliticalProjectUpdate(BaseModel):
@@ -48,6 +57,7 @@ class PoliticalProjectResponse(PoliticalProjectBase):
 
     id: str
     organization_id: str
+    campaign_id: str
     status: str
     created_by: str | None
     created_at: datetime

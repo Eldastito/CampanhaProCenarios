@@ -48,5 +48,9 @@ coverage/
 *.db
 /tmp/
 
+# Runtime evidence storage (gerado por uploads em testes/dev)
+/storage/
+backend/storage/
+
 # TypeScript incremental build cache
 *.tsbuildinfo

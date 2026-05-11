@@ -104,6 +104,42 @@ export default function PoliticalProjectsPage() {
 
 function ProjectCard({ project }: { project: PoliticalProject }) {
   const region = [project.municipality, project.state].filter(Boolean).join(' / ')
+  const [sync, setSync] = useState<{
+    label: string
+    color: string
+    coverage: number | null
+  } | null>(null)
+
+  // Fase 2 PRD v2 — semáforo de última sincronização CampanhaPro.
+  useEffect(() => {
+    let alive = true
+    politicalProjectsApi
+      .getLatestFactors(project.id)
+      .then((data) => {
+        if (!alive) return
+        const ageDays =
+          (Date.now() - new Date(data.reference_date).getTime()) / 86_400_000
+        let color = 'bg-green-100 text-green-700 border-green-200'
+        if (ageDays > 30) color = 'bg-red-100 text-red-700 border-red-200'
+        else if (ageDays > 7) color = 'bg-amber-100 text-amber-700 border-amber-200'
+        const formatter = new Intl.RelativeTimeFormat('pt-BR', { numeric: 'auto' })
+        const days = Math.round(ageDays)
+        const label = days <= 0 ? 'agora' : formatter.format(-days, 'day')
+        setSync({ label, color, coverage: data.coverage_percent })
+      })
+      .catch(() => {
+        if (!alive) return
+        setSync({
+          label: 'sem snapshot',
+          color: 'bg-gray-100 text-gray-500 border-gray-200',
+          coverage: null,
+        })
+      })
+    return () => {
+      alive = false
+    }
+  }, [project.id])
+
   return (
     <div className="rounded-lg border border-gray-200 bg-white p-4 hover:shadow-sm transition">
       <div className="flex items-start justify-between mb-2">
@@ -125,6 +161,23 @@ function ProjectCard({ project }: { project: PoliticalProject }) {
           {project.known_opponents.length > 3 ? '…' : ''}
         </p>
       )}
+      {sync && (
+        <div className="mt-2">
+          <span
+            className={`inline-flex items-center gap-1 text-[11px] px-2 py-0.5 rounded border ${sync.color}`}
+            title={
+              sync.coverage !== null
+                ? `Cobertura: ${sync.coverage.toFixed(1)}%`
+                : 'Envie um snapshot v1 do CampanhaPro para esta campanha'
+            }
+          >
+            sync CampanhaPro: {sync.label}
+            {sync.coverage !== null && (
+              <span className="opacity-70">· {sync.coverage.toFixed(0)}%</span>
+            )}
+          </span>
+        </div>
+      )}
       <div className="mt-3 pt-3 border-t border-gray-100 flex flex-wrap gap-3">
         <Link
           to={`/political/projects/${project.id}/evidence`}
@@ -143,6 +196,24 @@ function ProjectCard({ project }: { project: PoliticalProject }) {
           className="text-xs text-brand-700 hover:underline"
         >
           🧑‍⚖️ Bancada de Agentes
+        </Link>
+        <Link
+          to={`/political/projects/${project.id}/dossiers`}
+          className="text-xs text-brand-700 hover:underline"
+        >
+          🗂 Dossiês
+        </Link>
+        <Link
+          to={`/political/projects/${project.id}/election-probability`}
+          className="text-xs text-brand-700 hover:underline"
+        >
+          🎲 Probabilidade
+        </Link>
+        <Link
+          to={`/political/projects/${project.id}/dashboard`}
+          className="text-xs text-brand-700 hover:underline"
+        >
+          📊 Dashboard
         </Link>
       </div>
     </div>

@@ -28,15 +28,32 @@ def _make_engine():
 
 
 @pytest.fixture()
-def db_session(monkeypatch):
-    """Yield a SQLite in-memory session; tears down schema afterwards."""
-    test_engine = _make_engine()
-    TestingSessionLocal = sessionmaker(bind=test_engine, autoflush=False, autocommit=False)
-    Base.metadata.create_all(bind=test_engine)
+def _shared_engine(monkeypatch):
+    """Engine SQLite in-memory único compartilhado entre ``db_session`` e ``client``.
 
+    Necessário para que testes que combinam chamadas via API e queries diretas
+    em SQLAlchemy enxerguem os mesmos dados. Antes, cada fixture criava o
+    próprio engine — quem escrevia via API populava um SQLite, quem lia via
+    ORM lia outro, e asserts cruzados ficavam invisíveis. A organização
+    ``org_demo_001`` é semeada aqui uma única vez por teste para evitar
+    colisão de UNIQUE quando ambas as fixtures forem solicitadas.
+
+    Também repatcheia ``app.db.session.SessionLocal`` para usar este engine,
+    permitindo que workers Celery (eager mode na Fase 2 PRD v2) abram
+    sessão própria sem cair no Postgres de produção.
+    """
+    engine = _make_engine()
+    Base.metadata.create_all(bind=engine)
     monkeypatch.setattr(BootstrapService, "initialize", staticmethod(lambda: None))
 
-    with TestingSessionLocal() as session:
+    SessionLocal = sessionmaker(bind=engine, autoflush=False, autocommit=False)
+    # Patch das duas referências que workers podem importar.
+    monkeypatch.setattr("app.db.session.SessionLocal", SessionLocal)
+    monkeypatch.setattr("app.workers.snapshot_tasks.SessionLocal", SessionLocal)
+    monkeypatch.setattr("app.workers.dossier_tasks.SessionLocal", SessionLocal)
+    monkeypatch.setattr("app.workers.election_tasks.SessionLocal", SessionLocal)
+
+    with SessionLocal() as session:
         session.add(
             Organization(
                 id="org_demo_001",
@@ -45,19 +62,36 @@ def db_session(monkeypatch):
             )
         )
         session.commit()
-        yield session
 
-    Base.metadata.drop_all(bind=test_engine)
+    yield engine
+    Base.metadata.drop_all(bind=engine)
+
+
+@pytest.fixture(autouse=True)
+def _celery_eager(monkeypatch):
+    """Celery roda síncrono em testes — sem broker, sem worker."""
+    from app.workers.celery_app import celery_app
+
+    monkeypatch.setattr(celery_app.conf, "task_always_eager", True)
+    monkeypatch.setattr(celery_app.conf, "task_eager_propagates", True)
 
 
 @pytest.fixture()
-def client(monkeypatch):
-    """TestClient with SQLite in-memory DB and a seeded demo org."""
-    test_engine = _make_engine()
-    TestingSessionLocal = sessionmaker(bind=test_engine, autoflush=False, autocommit=False)
-    Base.metadata.create_all(bind=test_engine)
+def db_session(_shared_engine):
+    """Yield a SQLite in-memory session; tears down schema afterwards."""
+    TestingSessionLocal = sessionmaker(
+        bind=_shared_engine, autoflush=False, autocommit=False
+    )
+    with TestingSessionLocal() as session:
+        yield session
 
-    monkeypatch.setattr(BootstrapService, "initialize", staticmethod(lambda: None))
+
+@pytest.fixture()
+def client(_shared_engine):
+    """TestClient with SQLite in-memory DB and a seeded demo org."""
+    TestingSessionLocal = sessionmaker(
+        bind=_shared_engine, autoflush=False, autocommit=False
+    )
 
     def override_get_db():
         db = TestingSessionLocal()
@@ -68,21 +102,10 @@ def client(monkeypatch):
 
     app.dependency_overrides[get_db] = override_get_db
 
-    with TestingSessionLocal() as db:
-        db.add(
-            Organization(
-                id="org_demo_001",
-                name="Organizacao Demo",
-                organization_type="network",
-            )
-        )
-        db.commit()
-
     with TestClient(app) as test_client:
         yield test_client
 
     app.dependency_overrides.clear()
-    Base.metadata.drop_all(bind=test_engine)
 
 
 # ---------------------------------------------------------------------------

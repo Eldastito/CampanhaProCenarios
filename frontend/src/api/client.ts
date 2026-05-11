@@ -678,6 +678,7 @@ export const chatApi = {
 export interface PoliticalProject {
   id: string
   organization_id: string
+  campaign_id: string
   name: string
   description: string | null
   election_year: number
@@ -698,6 +699,7 @@ export interface PoliticalProject {
 
 export interface PoliticalProjectCreatePayload {
   organization_id: string
+  campaign_id?: string
   name: string
   description?: string | null
   election_year: number
@@ -710,6 +712,19 @@ export interface PoliticalProjectCreatePayload {
   objective?: string | null
   horizon_start?: string | null
   horizon_end?: string | null
+}
+
+// Cache de fatores derivado de snapshots CampanhaPro v1 (Fase 2 PRD v2).
+export interface LatestFactorsResponse {
+  snapshot_id: string
+  campaign_id: string
+  political_project_id: string | null
+  reference_date: string
+  factors: Record<string, number>
+  coverage_percent: number
+  sources_used: Record<string, string[]>
+  warnings: string[]
+  created_at: string
 }
 
 export interface PoliticalProjectUpdatePayload {
@@ -749,6 +764,286 @@ export const politicalProjectsApi = {
     }).then((res) => {
       if (!res.ok && res.status !== 204) throw new Error(`HTTP ${res.status}`)
     }),
+
+  // Fase 2 PRD v2 — último cache de fatores derivado de snapshot CampanhaPro v1.
+  // 404 quando ainda não há snapshot processado para a campanha do projeto.
+  getLatestFactors: (id: string) =>
+    request<LatestFactorsResponse>(`/political/projects/${id}/latest-factors`),
+}
+
+// ---------------------------------------------------------------------------
+// Candidate Dossier (Fase 3 PRD v2 — pesquisa estruturada de candidatos)
+// ---------------------------------------------------------------------------
+
+export type CandidateType = 'own' | 'opponent'
+
+export type DossierStatus = 'queued' | 'running' | 'ready' | 'failed'
+
+export interface CandidateDossierSummary {
+  id: string
+  candidate_name: string
+  candidate_type: CandidateType
+  party: string | null
+  office: string
+  status: DossierStatus
+  confidence_level: string
+  last_refreshed_at: string | null
+  created_at: string
+}
+
+export interface CandidateDossier {
+  id: string
+  organization_id: string
+  political_project_id: string
+  candidate_name: string
+  candidate_type: CandidateType
+  party: string | null
+  office: string
+  tse_candidate_id: string | null
+
+  biography: string | null
+  political_history: Record<string, unknown>
+  current_mandates: unknown[]
+  platform_and_proposals: Record<string, unknown>
+  legal_issues: unknown[]
+  ficha_limpa_status: string | null
+  recent_news: unknown[]
+  media_presence: Record<string, unknown>
+  social_metrics: Record<string, unknown>
+  rejection_drivers: string[]
+  strength_drivers: string[]
+  swot: Record<string, unknown>
+
+  confidence_level: string
+  sources: string[]
+  generated_by_ai: boolean
+  llm_models_used: string[]
+  status: DossierStatus
+  error_message: string | null
+  last_refreshed_at: string | null
+  created_at: string
+  updated_at: string
+}
+
+export interface CandidateDossierCreatePayload {
+  candidate_name: string
+  candidate_type: CandidateType
+  office: string
+  party?: string | null
+  tse_candidate_id?: string | null
+}
+
+export interface CandidateDossierQueuedResponse {
+  dossier_id: string
+  status: DossierStatus
+  candidate_name: string
+}
+
+export type SocialPlatform = 'instagram' | 'tiktok' | 'twitter' | 'facebook'
+
+export interface DossierSocialSnapshot {
+  id: string
+  dossier_id: string
+  platform: SocialPlatform
+  handle: string
+  followers: number | null
+  posts_last_30d: number | null
+  engagement_rate: number | null
+  avg_likes: number | null
+  avg_comments: number | null
+  top_posts: unknown[]
+  sentiment_distribution: Record<string, unknown>
+  source: 'api' | 'manual' | 'llm_estimate'
+  collected_at: string
+}
+
+export interface SocialSnapshotCreatePayload {
+  platform: SocialPlatform
+  handle: string
+  followers?: number | null
+  posts_last_30d?: number | null
+  engagement_rate?: number | null
+  avg_likes?: number | null
+  avg_comments?: number | null
+  notes?: string | null
+}
+
+export const dossiersApi = {
+  list: (projectId: string) =>
+    request<CandidateDossierSummary[]>(`/political/projects/${projectId}/dossiers`),
+
+  get: (projectId: string, dossierId: string) =>
+    request<CandidateDossier>(
+      `/political/projects/${projectId}/dossiers/${dossierId}`,
+    ),
+
+  create: (projectId: string, body: CandidateDossierCreatePayload) =>
+    request<CandidateDossierQueuedResponse>(
+      `/political/projects/${projectId}/dossiers`,
+      { method: 'POST', body: JSON.stringify(body) },
+    ),
+
+  refresh: (projectId: string, dossierId: string) =>
+    request<CandidateDossierQueuedResponse>(
+      `/political/projects/${projectId}/dossiers/${dossierId}/refresh`,
+      { method: 'POST' },
+    ),
+
+  remove: (projectId: string, dossierId: string) =>
+    fetch(`${BASE}/political/projects/${projectId}/dossiers/${dossierId}`, {
+      method: 'DELETE',
+      headers: authHeaders(),
+    }).then((res) => {
+      if (!res.ok && res.status !== 204) throw new Error(`HTTP ${res.status}`)
+    }),
+
+  listSocialSnapshots: (projectId: string, dossierId: string) =>
+    request<DossierSocialSnapshot[]>(
+      `/political/projects/${projectId}/dossiers/${dossierId}/social-snapshots`,
+    ),
+
+  addSocialSnapshot: (
+    projectId: string,
+    dossierId: string,
+    body: SocialSnapshotCreatePayload,
+  ) =>
+    request<DossierSocialSnapshot>(
+      `/political/projects/${projectId}/dossiers/${dossierId}/social-snapshots`,
+      { method: 'POST', body: JSON.stringify(body) },
+    ),
+}
+
+// ---------------------------------------------------------------------------
+// Election Probability — Monte Carlo (Fase 4 PRD v2)
+// ---------------------------------------------------------------------------
+
+export type ElectionStatus = 'queued' | 'running' | 'completed' | 'failed'
+
+export interface ElectionCandidateInput {
+  name: string
+  factors: Record<string, number>
+  confidence: number
+}
+
+export interface ElectionResultItem {
+  candidate_name: string
+  win_probability: number
+  win_first_round_probability: number
+  mean_share_first_round: number
+  share_ci_95_first_round: [number, number]
+  second_round_qualification_probability: number | null
+  second_round_win_given_qualified: number | null
+  input_confidence: number
+}
+
+export interface ElectionProbabilityResult {
+  id: string
+  organization_id: string
+  political_project_id: string
+  requested_by: string | null
+  office: string
+  iterations: number
+  seed: number | null
+  status: ElectionStatus
+  error_message: string | null
+  input_candidates: Array<Record<string, unknown>>
+  output_results: ElectionResultItem[]
+  confidence_level: string
+  created_at: string
+  completed_at: string | null
+}
+
+export interface ElectionProbabilitySummary {
+  id: string
+  office: string
+  iterations: number
+  status: ElectionStatus
+  confidence_level: string
+  created_at: string
+  completed_at: string | null
+}
+
+export interface ElectionProbabilityCreatePayload {
+  office: string
+  candidates: ElectionCandidateInput[]
+  iterations?: number | null
+  seed?: number | null
+  two_rounds?: boolean | null
+}
+
+export interface ElectionQueuedResponse {
+  result_id: string
+  status: ElectionStatus
+}
+
+// ---------------------------------------------------------------------------
+// Reports (Fase 5 PRD v2 — PDF/DOCX com branding)
+// ---------------------------------------------------------------------------
+
+export type ReportType =
+  | 'executive_summary'
+  | 'factor_deep_dive'
+  | 'candidate_comparison'
+  | 'scenario_what_if'
+  | 'compliance_audit'
+  | 'dossier_export'
+
+export type ReportFormat = 'pdf' | 'docx'
+
+export interface ReportRequestBody {
+  type: ReportType
+  format: ReportFormat
+  context?: Record<string, unknown>
+}
+
+export const reportsApi = {
+  /**
+   * Faz POST esperando blob binário (PDF ou DOCX). Lança Error com a mensagem
+   * do servidor quando 4xx/5xx (ex: 503 se PDF indisponível, 400 se faltar
+   * scenario_id/dossier_id no context).
+   */
+  generate: async (projectId: string, body: ReportRequestBody): Promise<Blob> => {
+    const token = localStorage.getItem('fsl_token')
+    const res = await fetch(`${BASE}/political/projects/${projectId}/reports`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        ...(token ? { Authorization: `Bearer ${token}` } : {}),
+      },
+      body: JSON.stringify(body),
+    })
+    if (!res.ok) {
+      let detail = `HTTP ${res.status}`
+      try {
+        const j = await res.json()
+        detail = typeof j.detail === 'string' ? j.detail : JSON.stringify(j.detail)
+      } catch {
+        // ignore
+      }
+      throw new Error(detail)
+    }
+    return res.blob()
+  },
+}
+
+// ---------------------------------------------------------------------------
+
+export const electionProbabilityApi = {
+  list: (projectId: string) =>
+    request<ElectionProbabilitySummary[]>(
+      `/political/projects/${projectId}/election-probability`,
+    ),
+
+  get: (projectId: string, resultId: string) =>
+    request<ElectionProbabilityResult>(
+      `/political/projects/${projectId}/election-probability/${resultId}`,
+    ),
+
+  create: (projectId: string, body: ElectionProbabilityCreatePayload) =>
+    request<ElectionQueuedResponse>(
+      `/political/projects/${projectId}/election-probability`,
+      { method: 'POST', body: JSON.stringify(body) },
+    ),
 }
 
 // ---------------------------------------------------------------------------

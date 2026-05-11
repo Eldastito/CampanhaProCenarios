@@ -16,10 +16,12 @@ from app.db.session import get_db
 from app.deps.auth import require_analyst
 from app.models.political import PoliticalAuditLog, PoliticalProject
 from app.models.user import User
+from app.repositories.factor_cache_repository import CampanhaProFactorCacheRepository
 from app.repositories.political_repository import (
     PoliticalAuditLogRepository,
     PoliticalProjectRepository,
 )
+from app.schemas.factor_cache import LatestFactorsResponse
 from app.schemas.political import (
     PoliticalProjectCreate,
     PoliticalProjectResponse,
@@ -27,6 +29,12 @@ from app.schemas.political import (
 )
 
 router = APIRouter()
+
+
+# Limite MVP definido no PRD v2 §4: cada organização pode manter no máximo
+# 10 campanhas simultâneas (DISTINCT campaign_id). Múltiplos projetos da
+# mesma campanha não consomem slots adicionais.
+MVP_CAMPAIGN_LIMIT_PER_ORG = 10
 
 
 def _audit(
@@ -80,9 +88,28 @@ def create_project(
         )
 
     repo = PoliticalProjectRepository(db)
+
+    # Quota MVP: bloqueia se a organização já atingiu o limite e o
+    # campaign_id solicitado é uma campanha nova. Reuso de campaign_id
+    # existente (criar um segundo projeto na mesma campanha) é permitido.
+    project_id = str(uuid4())
+    campaign_id = body.campaign_id or project_id
+    is_new_campaign = not repo.has_campaign(body.organization_id, campaign_id)
+    if is_new_campaign:
+        active = repo.count_distinct_campaigns(body.organization_id)
+        if active >= MVP_CAMPAIGN_LIMIT_PER_ORG:
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail=(
+                    f"Limite MVP de {MVP_CAMPAIGN_LIMIT_PER_ORG} campanhas "
+                    "simultâneas atingido para esta organização."
+                ),
+            )
+
     project = PoliticalProject(
-        id=str(uuid4()),
+        id=project_id,
         organization_id=body.organization_id,
+        campaign_id=campaign_id,
         name=body.name,
         description=body.description,
         election_year=body.election_year,
@@ -108,7 +135,13 @@ def create_project(
         action="political_project.created",
         target_type="political_project",
         target_id=saved.id,
-        payload={"name": saved.name, "office": saved.office, "year": saved.election_year},
+        payload={
+            "name": saved.name,
+            "office": saved.office,
+            "year": saved.election_year,
+            "campaign_id": saved.campaign_id,
+            "new_campaign": is_new_campaign,
+        },
     )
 
     return PoliticalProjectResponse.model_validate(saved)
@@ -181,6 +214,37 @@ def update_project(
     )
 
     return PoliticalProjectResponse.model_validate(saved)
+
+
+@router.get(
+    "/{project_id}/latest-factors",
+    response_model=LatestFactorsResponse,
+    summary="Último cache de fatores derivado de snapshot CampanhaPro v1",
+)
+def get_latest_factors(
+    project_id: str,
+    db: Session = Depends(get_db),
+    user: User = Depends(require_analyst),
+) -> LatestFactorsResponse:
+    project = PoliticalProjectRepository(db).get_by_id(project_id)
+    if project is None:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Projeto não encontrado.")
+    _ensure_same_org(project, user)
+
+    cache_repo = CampanhaProFactorCacheRepository(db)
+    # Tenta primeiro pelo project_id (FK direta); cai pra campaign_id
+    # quando o mapper rodou antes do projeto existir / sem FK setada.
+    cache = cache_repo.latest_for_project(user.organization_id, project.id)
+    if cache is None:
+        cache = cache_repo.latest_for_campaign(user.organization_id, project.campaign_id)
+
+    if cache is None:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Nenhum snapshot CampanhaPro v1 processado para esta campanha ainda.",
+        )
+
+    return LatestFactorsResponse.model_validate(cache)
 
 
 @router.delete(

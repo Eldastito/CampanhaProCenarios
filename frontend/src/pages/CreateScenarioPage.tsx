@@ -1,6 +1,10 @@
-import { FormEvent, useState } from 'react'
-import { useNavigate } from 'react-router-dom'
-import { scenariosApi } from '../api/client'
+import { FormEvent, useEffect, useState } from 'react'
+import { useNavigate, useSearchParams } from 'react-router-dom'
+import {
+  PoliticalProject,
+  politicalProjectsApi,
+  scenariosApi,
+} from '../api/client'
 import Layout from '../components/Layout'
 import { FactorGroup } from '../components/FactorInput'
 import { useAuth } from '../contexts/AuthContext'
@@ -9,18 +13,97 @@ import { SCENARIO_CATALOG, defaultFactors, getScenarioTypeDef } from '../scenari
 export default function CreateScenarioPage() {
   const { user } = useAuth()
   const navigate = useNavigate()
-  const [scenarioType, setScenarioType] = useState('education')
+  const [searchParams, setSearchParams] = useSearchParams()
+
+  function patchParams(updates: Record<string, string | null>) {
+    const params = new URLSearchParams(searchParams)
+    for (const [k, v] of Object.entries(updates)) {
+      if (v === null || v === '') {
+        params.delete(k)
+      } else {
+        params.set(k, v)
+      }
+    }
+    setSearchParams(params, { replace: true })
+  }
+
+  // type e project persistem via URL para sobreviver back/forward.
+  const scenarioType = searchParams.get('type') || 'education'
+  const selectedProjectId = searchParams.get('project') || ''
+
   const [name, setName] = useState('')
   const [description, setDescription] = useState('')
-  const [baseline, setBaseline] = useState<Record<string, number>>(defaultFactors('education'))
-  const [alternative, setAlternative] = useState<Record<string, number>>(defaultFactors('education'))
+  const [baseline, setBaseline] = useState<Record<string, number>>(defaultFactors(scenarioType))
+  const [alternative, setAlternative] = useState<Record<string, number>>(defaultFactors(scenarioType))
   const [error, setError] = useState<string | null>(null)
   const [loading, setLoading] = useState(false)
 
+  // Fase 2 PRD v2 — import de fatores reais a partir do CampanhaPro.
+  const [politicalProjects, setPoliticalProjects] = useState<PoliticalProject[]>([])
+  const [importedFactorKeys, setImportedFactorKeys] = useState<Set<string>>(new Set())
+  const [importMeta, setImportMeta] = useState<{
+    coverage_percent: number
+    warnings: string[]
+    reference_date: string
+    sources_used: Record<string, string[]>
+  } | null>(null)
+  const [importing, setImporting] = useState(false)
+  const [importMessage, setImportMessage] = useState<string | null>(null)
+
+  useEffect(() => {
+    if (scenarioType !== 'electoral') return
+    politicalProjectsApi
+      .list()
+      .then(setPoliticalProjects)
+      .catch(() => setPoliticalProjects([]))
+  }, [scenarioType])
+
   function handleTypeChange(type: string) {
-    setScenarioType(type)
+    patchParams({ type: type === 'education' ? null : type })
     setBaseline(defaultFactors(type))
     setAlternative(defaultFactors(type))
+    setImportedFactorKeys(new Set())
+    setImportMeta(null)
+    setImportMessage(null)
+  }
+
+  function handleProjectChange(id: string) {
+    patchParams({ project: id || null })
+  }
+
+  async function handleImportFromCampanhaPro() {
+    if (!selectedProjectId) return
+    setImporting(true)
+    setImportMessage(null)
+    try {
+      const data = await politicalProjectsApi.getLatestFactors(selectedProjectId)
+      // Pré-preenche tanto baseline quanto alternativo com fatores reais.
+      // O usuário ajusta o alternativo manualmente para projetar mudanças.
+      setBaseline((prev) => ({ ...prev, ...data.factors }))
+      setAlternative((prev) => ({ ...prev, ...data.factors }))
+      setImportedFactorKeys(new Set(Object.keys(data.factors)))
+      setImportMeta({
+        coverage_percent: data.coverage_percent,
+        warnings: data.warnings,
+        reference_date: data.reference_date,
+        sources_used: data.sources_used,
+      })
+      setImportMessage(
+        `${Object.keys(data.factors).length} fatores importados. Cobertura ${data.coverage_percent.toFixed(1)}%.`,
+      )
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : 'Falha ao importar.'
+      // 404 = sem snapshot ainda → mensagem amigável
+      if (msg.includes('Nenhum snapshot') || msg.includes('404')) {
+        setImportMessage(
+          'Nenhum snapshot CampanhaPro processado para esta campanha ainda. Envie um snapshot v1 antes.',
+        )
+      } else {
+        setImportMessage(msg)
+      }
+    } finally {
+      setImporting(false)
+    }
   }
 
   function setBaselineFactor(factor: string, value: number) {
@@ -94,6 +177,79 @@ export default function CreateScenarioPage() {
             ))}
           </div>
         </div>
+
+        {/* Import from CampanhaPro — visível apenas para cenários eleitorais */}
+        {scenarioType === 'electoral' && (
+          <div className="bg-white rounded-xl border border-gray-200 p-6 mb-6">
+            <div className="flex items-start justify-between gap-4 mb-3">
+              <div>
+                <h2 className="text-base font-semibold text-gray-900">
+                  Importar do CampanhaPro
+                </h2>
+                <p className="text-xs text-gray-500 mt-1">
+                  Pré-preenche os fatores com base no último snapshot v1 enviado pela campanha.
+                </p>
+              </div>
+              <span className="text-[10px] uppercase tracking-wide bg-indigo-100 text-indigo-700 px-2 py-1 rounded">
+                Fase 2
+              </span>
+            </div>
+            <div className="flex flex-wrap items-end gap-3">
+              <div className="flex-1 min-w-[260px]">
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Projeto eleitoral
+                </label>
+                <select
+                  value={selectedProjectId}
+                  onChange={(e) => handleProjectChange(e.target.value)}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-brand-500"
+                >
+                  <option value="">— selecione —</option>
+                  {politicalProjects.map((p) => (
+                    <option key={p.id} value={p.id}>
+                      {p.candidate_name} · {p.office} · {p.election_year}
+                    </option>
+                  ))}
+                </select>
+              </div>
+              <button
+                type="button"
+                onClick={handleImportFromCampanhaPro}
+                disabled={!selectedProjectId || importing}
+                className="bg-indigo-600 hover:bg-indigo-700 disabled:opacity-60 text-white font-medium py-2 px-4 rounded-lg text-sm transition-colors"
+              >
+                {importing ? 'Importando…' : '📥 Importar dados do CampanhaPro'}
+              </button>
+            </div>
+            {importMessage && (
+              <p className="mt-3 text-sm text-gray-600">{importMessage}</p>
+            )}
+            {importMeta && (
+              <div className="mt-4 p-3 bg-indigo-50 border border-indigo-200 rounded-lg text-xs text-indigo-900">
+                <div className="font-semibold mb-1">
+                  Cobertura: {importMeta.coverage_percent.toFixed(1)}% · referência:{' '}
+                  {new Date(importMeta.reference_date).toLocaleString('pt-BR')}
+                </div>
+                {importMeta.warnings.length > 0 && (
+                  <ul className="list-disc list-inside text-indigo-800">
+                    {importMeta.warnings.map((w, i) => (
+                      <li key={i}>{w}</li>
+                    ))}
+                  </ul>
+                )}
+                {importedFactorKeys.size > 0 && (
+                  <div className="mt-2">
+                    Fatores marcados como{' '}
+                    <span className="bg-indigo-200 text-indigo-900 px-1.5 py-0.5 rounded">
+                      real
+                    </span>
+                    : {Array.from(importedFactorKeys).join(', ')}.
+                  </div>
+                )}
+              </div>
+            )}
+          </div>
+        )}
 
         {/* Basic info */}
         <div className="bg-white rounded-xl border border-gray-200 p-6 mb-6">

@@ -1,0 +1,72 @@
+{% extends "_base.html" %}
+{% block content %}
+  <h2>Dossiê — {{ dossier.candidate_name }}</h2>
+  <p class="meta">
+    {{ 'Candidato próprio' if dossier.candidate_type == 'own' else 'Adversário' }} ·
+    {{ dossier.party or 'sem partido' }} · {{ dossier.office }} ·
+    Confiança: <span class="badge badge-{{ confidence_class }}">{{ dossier.confidence_level|upper }}</span>
+  </p>
+
+  {% if dossier.biography %}
+  <h3>Biografia</h3>
+  <p>{{ dossier.biography }}</p>
+  {% endif %}
+
+  {% if dossier.current_mandates %}
+  <h3>Mandatos atuais</h3>
+  <ul class="tight">{% for m in dossier.current_mandates %}<li>{{ m }}</li>{% endfor %}</ul>
+  {% endif %}
+
+  {% if dossier.ficha_limpa_status %}
+  <p><strong>Ficha Limpa:</strong> {{ dossier.ficha_limpa_status }}</p>
+  {% endif %}
+
+  {% if dossier.swot %}
+  <h3>SWOT</h3>
+  <table>
+    <tr>
+      <th>Forças</th>
+      <th>Fraquezas</th>
+    </tr>
+    <tr>
+      <td>{% if dossier.swot.strengths %}<ul class="tight">{% for s in dossier.swot.strengths %}<li>{{ s }}</li>{% endfor %}</ul>{% else %}—{% endif %}</td>
+      <td>{% if dossier.swot.weaknesses %}<ul class="tight">{% for s in dossier.swot.weaknesses %}<li>{{ s }}</li>{% endfor %}</ul>{% else %}—{% endif %}</td>
+    </tr>
+    <tr>
+      <th>Oportunidades</th>
+      <th>Ameaças</th>
+    </tr>
+    <tr>
+      <td>{% if dossier.swot.opportunities %}<ul class="tight">{% for s in dossier.swot.opportunities %}<li>{{ s }}</li>{% endfor %}</ul>{% else %}—{% endif %}</td>
+      <td>{% if dossier.swot.threats %}<ul class="tight">{% for s in dossier.swot.threats %}<li>{{ s }}</li>{% endfor %}</ul>{% else %}—{% endif %}</td>
+    </tr>
+  </table>
+  {% endif %}
+
+  {% if dossier.strength_drivers or dossier.rejection_drivers %}
+  <h3>Drivers</h3>
+  {% if dossier.strength_drivers %}<p><strong>Apoio:</strong></p><ul class="tight">{% for d in dossier.strength_drivers %}<li>{{ d }}</li>{% endfor %}</ul>{% endif %}
+  {% if dossier.rejection_drivers %}<p><strong>Rejeição:</strong></p><ul class="tight">{% for d in dossier.rejection_drivers %}<li>{{ d }}</li>{% endfor %}</ul>{% endif %}
+  {% endif %}
+
+  {% if dossier.legal_issues %}
+  <h3>Questões jurídicas</h3>
+  <ul class="tight">
+    {% for it in dossier.legal_issues %}<li><strong>{{ it.tipo or 'questão' }}</strong> ({{ it.status or '?' }}): {{ it.descricao or '' }}</li>{% endfor %}
+  </ul>
+  {% endif %}
+
+  {% if dossier.recent_news %}
+  <h3>Notícias recentes</h3>
+  <ul class="tight">
+    {% for n in dossier.recent_news[:10] %}<li>{{ n.title or n.url or '—' }} <span class="meta">— {{ n.source or '' }} {{ n.published_at or '' }}</span></li>{% endfor %}
+  </ul>
+  {% endif %}
+
+  {% if dossier.sources %}
+  <h3>Fontes</h3>
+  <ul class="tight">
+    {% for s in dossier.sources[:30] %}<li class="meta">{{ s }}</li>{% endfor %}
+  </ul>
+  {% endif %}
+{% endblock %}

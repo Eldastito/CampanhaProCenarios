@@ -25,6 +25,12 @@ class PoliticalProject(Base):
         nullable=False,
         index=True,
     )
+    # Identificador externo da campanha no CampanhaPro. É a chave de
+    # isolamento exigida pelo PRD v2: snapshots, dossiês, cache de fatores
+    # e relatórios são todos escopados por (organization_id, campaign_id).
+    # Para projetos criados antes do v2 o backfill da migration 0010
+    # define campaign_id = id (1 projeto = 1 campanha histórica).
+    campaign_id: Mapped[str] = mapped_column(String(64), nullable=False, index=True)
     name: Mapped[str] = mapped_column(String(255), nullable=False)
     description: Mapped[str | None] = mapped_column(Text, nullable=True)
 
@@ -43,6 +49,13 @@ class PoliticalProject(Base):
     horizon_end: Mapped[datetime | None] = mapped_column(DateTime, nullable=True)
 
     status: Mapped[str] = mapped_column(String(32), nullable=False, default="draft")
+
+    # Fase 5 PRD v2 — branding usado em relatórios PDF/DOCX. Populado
+    # automaticamente pelo mapper da Fase 2 a partir de campaign.details
+    # do snapshot v1; pode ser sobrescrito manualmente via PATCH do projeto.
+    header_logo_url: Mapped[str | None] = mapped_column(String(1000), nullable=True)
+    footer_logo_url: Mapped[str | None] = mapped_column(String(1000), nullable=True)
+    candidate_photo_url: Mapped[str | None] = mapped_column(String(1000), nullable=True)
 
     created_by: Mapped[str | None] = mapped_column(String(64), nullable=True)
     created_at: Mapped[datetime] = mapped_column(DateTime, default=utc_now_naive, nullable=False)

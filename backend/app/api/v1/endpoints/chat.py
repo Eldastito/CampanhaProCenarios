@@ -237,7 +237,7 @@ def _handle_insight_campanha(agent, query: str, graph_id: str | None, db: Sessio
         )
 
     nodes = {n.id: n for n in db.query(GraphNode).filter(GraphNode.project_id == graph_id).all()}
-    lines = [f"## InsightCampanha — Atribuição Profunda\n"]
+    lines = ["## InsightCampanha — Atribuição Profunda\n"]
 
     for sim in sims:
         steps = db.query(SimulationStep).filter(SimulationStep.simulation_id == sim.id).all()
@@ -249,7 +249,7 @@ def _handle_insight_campanha(agent, query: str, graph_id: str | None, db: Sessio
         lines.append(f"### Simulação: *{sim.name}*")
         lines.append(f"- Status: {sim.status} · {len(steps)} atos")
         lines.append(f"- Resumo: {sim.summary or 'sem resumo'}")
-        lines.append(f"- **Atribuição (top 5 agentes mais influentes):**")
+        lines.append("- **Atribuição (top 5 agentes mais influentes):**")
         for agent_label, count in top:
             pct = round(100 * count / max(len(steps), 1), 1)
             lines.append(f"  - {agent_label}: {count} atos ({pct}%)")

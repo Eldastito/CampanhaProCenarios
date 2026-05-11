@@ -1,0 +1,30 @@
+{% extends "_base.html" %}
+{% block content %}
+  <h2>Deep Dive — 12 Fatores Eleitorais</h2>
+  <p>Confiança: <span class="badge badge-{{ confidence_class }}">{{ confidence_level|upper }}</span>
+  · Cobertura: {{ coverage_percent }}% · Snapshot de {{ reference_date }}</p>
+
+  <table>
+    <tr><th>Fator</th><th>Valor</th><th style="width:30%">Distribuição</th><th>Origem</th></tr>
+    {% for f in factors %}
+    <tr>
+      <td>
+        <strong>{{ f.label }}</strong>
+        <div class="meta">{{ f.recommendation_hint }}</div>
+      </td>
+      <td>{{ f.value|default('—') }}</td>
+      <td>
+        {% if f.value is not none %}
+          <div class="factor-bar"><div class="fill" style="width: {{ f.value }}%"></div></div>
+        {% endif %}
+      </td>
+      <td class="meta">{{ f.sources|join(', ') if f.sources else 'manual' }}</td>
+    </tr>
+    {% endfor %}
+  </table>
+
+  {% if warnings %}
+  <h3>Avisos do mapeamento</h3>
+  <ul class="tight">{% for w in warnings %}<li>{{ w }}</li>{% endfor %}</ul>
+  {% endif %}
+{% endblock %}

@@ -18,6 +18,10 @@ import PoliticalProjectsPage from './pages/PoliticalProjectsPage'
 import EvidencePage from './pages/EvidencePage'
 import PoliticalAgentsPage from './pages/PoliticalAgentsPage'
 import PoliticalGraphPage from './pages/PoliticalGraphPage'
+import DossiersPage from './pages/DossiersPage'
+import DossierDetailPage from './pages/DossierDetailPage'
+import ElectionProbabilityPage from './pages/ElectionProbabilityPage'
+import ExecutiveDashboardPage from './pages/ExecutiveDashboardPage'
 
 export default function App() {
   return (
@@ -35,6 +39,19 @@ export default function App() {
             <Route path="/political/projects/:projectId/evidence" element={<EvidencePage />} />
             <Route path="/political/projects/:projectId/agents" element={<PoliticalAgentsPage />} />
             <Route path="/political/projects/:projectId/graph" element={<PoliticalGraphPage />} />
+            <Route path="/political/projects/:projectId/dossiers" element={<DossiersPage />} />
+            <Route
+              path="/political/projects/:projectId/dossiers/:dossierId"
+              element={<DossierDetailPage />}
+            />
+            <Route
+              path="/political/projects/:projectId/election-probability"
+              element={<ElectionProbabilityPage />}
+            />
+            <Route
+              path="/political/projects/:projectId/dashboard"
+              element={<ExecutiveDashboardPage />}
+            />
             <Route path="/scenarios/new" element={<CreateScenarioPage />} />
             <Route path="/scenarios/:id" element={<ScenarioDetailPage />} />
             <Route path="/compare" element={<ComparePage />} />
