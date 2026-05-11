@@ -772,6 +772,148 @@ export const politicalProjectsApi = {
 }
 
 // ---------------------------------------------------------------------------
+// Candidate Dossier (Fase 3 PRD v2 — pesquisa estruturada de candidatos)
+// ---------------------------------------------------------------------------
+
+export type CandidateType = 'own' | 'opponent'
+
+export type DossierStatus = 'queued' | 'running' | 'ready' | 'failed'
+
+export interface CandidateDossierSummary {
+  id: string
+  candidate_name: string
+  candidate_type: CandidateType
+  party: string | null
+  office: string
+  status: DossierStatus
+  confidence_level: string
+  last_refreshed_at: string | null
+  created_at: string
+}
+
+export interface CandidateDossier {
+  id: string
+  organization_id: string
+  political_project_id: string
+  candidate_name: string
+  candidate_type: CandidateType
+  party: string | null
+  office: string
+  tse_candidate_id: string | null
+
+  biography: string | null
+  political_history: Record<string, unknown>
+  current_mandates: unknown[]
+  platform_and_proposals: Record<string, unknown>
+  legal_issues: unknown[]
+  ficha_limpa_status: string | null
+  recent_news: unknown[]
+  media_presence: Record<string, unknown>
+  social_metrics: Record<string, unknown>
+  rejection_drivers: string[]
+  strength_drivers: string[]
+  swot: Record<string, unknown>
+
+  confidence_level: string
+  sources: string[]
+  generated_by_ai: boolean
+  llm_models_used: string[]
+  status: DossierStatus
+  error_message: string | null
+  last_refreshed_at: string | null
+  created_at: string
+  updated_at: string
+}
+
+export interface CandidateDossierCreatePayload {
+  candidate_name: string
+  candidate_type: CandidateType
+  office: string
+  party?: string | null
+  tse_candidate_id?: string | null
+}
+
+export interface CandidateDossierQueuedResponse {
+  dossier_id: string
+  status: DossierStatus
+  candidate_name: string
+}
+
+export type SocialPlatform = 'instagram' | 'tiktok' | 'twitter' | 'facebook'
+
+export interface DossierSocialSnapshot {
+  id: string
+  dossier_id: string
+  platform: SocialPlatform
+  handle: string
+  followers: number | null
+  posts_last_30d: number | null
+  engagement_rate: number | null
+  avg_likes: number | null
+  avg_comments: number | null
+  top_posts: unknown[]
+  sentiment_distribution: Record<string, unknown>
+  source: 'api' | 'manual' | 'llm_estimate'
+  collected_at: string
+}
+
+export interface SocialSnapshotCreatePayload {
+  platform: SocialPlatform
+  handle: string
+  followers?: number | null
+  posts_last_30d?: number | null
+  engagement_rate?: number | null
+  avg_likes?: number | null
+  avg_comments?: number | null
+  notes?: string | null
+}
+
+export const dossiersApi = {
+  list: (projectId: string) =>
+    request<CandidateDossierSummary[]>(`/political/projects/${projectId}/dossiers`),
+
+  get: (projectId: string, dossierId: string) =>
+    request<CandidateDossier>(
+      `/political/projects/${projectId}/dossiers/${dossierId}`,
+    ),
+
+  create: (projectId: string, body: CandidateDossierCreatePayload) =>
+    request<CandidateDossierQueuedResponse>(
+      `/political/projects/${projectId}/dossiers`,
+      { method: 'POST', body: JSON.stringify(body) },
+    ),
+
+  refresh: (projectId: string, dossierId: string) =>
+    request<CandidateDossierQueuedResponse>(
+      `/political/projects/${projectId}/dossiers/${dossierId}/refresh`,
+      { method: 'POST' },
+    ),
+
+  remove: (projectId: string, dossierId: string) =>
+    fetch(`${BASE}/political/projects/${projectId}/dossiers/${dossierId}`, {
+      method: 'DELETE',
+      headers: authHeaders(),
+    }).then((res) => {
+      if (!res.ok && res.status !== 204) throw new Error(`HTTP ${res.status}`)
+    }),
+
+  listSocialSnapshots: (projectId: string, dossierId: string) =>
+    request<DossierSocialSnapshot[]>(
+      `/political/projects/${projectId}/dossiers/${dossierId}/social-snapshots`,
+    ),
+
+  addSocialSnapshot: (
+    projectId: string,
+    dossierId: string,
+    body: SocialSnapshotCreatePayload,
+  ) =>
+    request<DossierSocialSnapshot>(
+      `/political/projects/${projectId}/dossiers/${dossierId}/social-snapshots`,
+      { method: 'POST', body: JSON.stringify(body) },
+    ),
+}
+
+// ---------------------------------------------------------------------------
 // Political Evidence (Fase 2 — ingestão de evidências)
 // ---------------------------------------------------------------------------
 

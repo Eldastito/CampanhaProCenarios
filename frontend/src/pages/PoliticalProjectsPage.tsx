@@ -197,6 +197,12 @@ function ProjectCard({ project }: { project: PoliticalProject }) {
         >
           🧑‍⚖️ Bancada de Agentes
         </Link>
+        <Link
+          to={`/political/projects/${project.id}/dossiers`}
+          className="text-xs text-brand-700 hover:underline"
+        >
+          🗂 Dossiês
+        </Link>
       </div>
     </div>
   )
