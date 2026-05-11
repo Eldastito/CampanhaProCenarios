@@ -1,5 +1,5 @@
 import { FormEvent, useEffect, useState } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useNavigate, useSearchParams } from 'react-router-dom'
 import {
   PoliticalProject,
   politicalProjectsApi,
@@ -13,17 +13,33 @@ import { SCENARIO_CATALOG, defaultFactors, getScenarioTypeDef } from '../scenari
 export default function CreateScenarioPage() {
   const { user } = useAuth()
   const navigate = useNavigate()
-  const [scenarioType, setScenarioType] = useState('education')
+  const [searchParams, setSearchParams] = useSearchParams()
+
+  function patchParams(updates: Record<string, string | null>) {
+    const params = new URLSearchParams(searchParams)
+    for (const [k, v] of Object.entries(updates)) {
+      if (v === null || v === '') {
+        params.delete(k)
+      } else {
+        params.set(k, v)
+      }
+    }
+    setSearchParams(params, { replace: true })
+  }
+
+  // type e project persistem via URL para sobreviver back/forward.
+  const scenarioType = searchParams.get('type') || 'education'
+  const selectedProjectId = searchParams.get('project') || ''
+
   const [name, setName] = useState('')
   const [description, setDescription] = useState('')
-  const [baseline, setBaseline] = useState<Record<string, number>>(defaultFactors('education'))
-  const [alternative, setAlternative] = useState<Record<string, number>>(defaultFactors('education'))
+  const [baseline, setBaseline] = useState<Record<string, number>>(defaultFactors(scenarioType))
+  const [alternative, setAlternative] = useState<Record<string, number>>(defaultFactors(scenarioType))
   const [error, setError] = useState<string | null>(null)
   const [loading, setLoading] = useState(false)
 
   // Fase 2 PRD v2 — import de fatores reais a partir do CampanhaPro.
   const [politicalProjects, setPoliticalProjects] = useState<PoliticalProject[]>([])
-  const [selectedProjectId, setSelectedProjectId] = useState<string>('')
   const [importedFactorKeys, setImportedFactorKeys] = useState<Set<string>>(new Set())
   const [importMeta, setImportMeta] = useState<{
     coverage_percent: number
@@ -43,12 +59,16 @@ export default function CreateScenarioPage() {
   }, [scenarioType])
 
   function handleTypeChange(type: string) {
-    setScenarioType(type)
+    patchParams({ type: type === 'education' ? null : type })
     setBaseline(defaultFactors(type))
     setAlternative(defaultFactors(type))
     setImportedFactorKeys(new Set())
     setImportMeta(null)
     setImportMessage(null)
+  }
+
+  function handleProjectChange(id: string) {
+    patchParams({ project: id || null })
   }
 
   async function handleImportFromCampanhaPro() {
@@ -181,7 +201,7 @@ export default function CreateScenarioPage() {
                 </label>
                 <select
                   value={selectedProjectId}
-                  onChange={(e) => setSelectedProjectId(e.target.value)}
+                  onChange={(e) => handleProjectChange(e.target.value)}
                   className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-brand-500"
                 >
                   <option value="">— selecione —</option>

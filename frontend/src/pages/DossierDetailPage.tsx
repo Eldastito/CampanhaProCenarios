@@ -1,5 +1,5 @@
 import { FormEvent, useEffect, useMemo, useState } from 'react'
-import { Link, useNavigate, useParams } from 'react-router-dom'
+import { Link, useNavigate, useParams, useSearchParams } from 'react-router-dom'
 import Layout from '../components/Layout'
 import {
   CandidateDossier,
@@ -30,6 +30,12 @@ const TABS: { key: Tab; label: string }[] = [
   { key: 'fontes', label: 'Fontes' },
 ]
 
+const TAB_KEYS = TABS.map((t) => t.key) as Tab[]
+
+function isTab(value: string | null): value is Tab {
+  return value !== null && (TAB_KEYS as string[]).includes(value)
+}
+
 const STATUS_BADGE: Record<string, { label: string; color: string }> = {
   queued: { label: 'na fila', color: 'bg-gray-100 text-gray-700 border-gray-200' },
   running: {
@@ -46,12 +52,24 @@ export default function DossierDetailPage() {
     dossierId: string
   }>()
   const navigate = useNavigate()
+  const [searchParams, setSearchParams] = useSearchParams()
 
   const [dossier, setDossier] = useState<CandidateDossier | null>(null)
   const [snapshots, setSnapshots] = useState<DossierSocialSnapshot[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
-  const [tab, setTab] = useState<Tab>('resumo')
+  // Aba ativa vem de ?tab=… para sobreviver a navegação back/forward.
+  const tabParam = searchParams.get('tab')
+  const tab: Tab = isTab(tabParam) ? tabParam : 'resumo'
+  function setTab(next: Tab) {
+    const params = new URLSearchParams(searchParams)
+    if (next === 'resumo') {
+      params.delete('tab')
+    } else {
+      params.set('tab', next)
+    }
+    setSearchParams(params, { replace: true })
+  }
   const [refreshing, setRefreshing] = useState(false)
 
   async function load() {

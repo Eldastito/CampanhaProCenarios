@@ -1,5 +1,5 @@
 import { FormEvent, useEffect, useState } from 'react'
-import { Link, useParams } from 'react-router-dom'
+import { Link, useParams, useSearchParams } from 'react-router-dom'
 import Layout from '../components/Layout'
 import {
   ElectionCandidateInput,
@@ -78,17 +78,50 @@ function toApiCandidate(c: DraftCandidate): ElectionCandidateInput {
 
 export default function ElectionProbabilityPage() {
   const { projectId = '' } = useParams<{ projectId: string }>()
+  const [searchParams, setSearchParams] = useSearchParams()
+
+  function patchParams(updates: Record<string, string | null>) {
+    const params = new URLSearchParams(searchParams)
+    for (const [k, v] of Object.entries(updates)) {
+      if (v === null || v === '') {
+        params.delete(k)
+      } else {
+        params.set(k, v)
+      }
+    }
+    setSearchParams(params, { replace: true })
+  }
+
+  // Estado persistido via URL search params.
+  const office = searchParams.get('office') || 'Prefeito'
+  const iterationsParam = Number(searchParams.get('iter') || '10000')
+  const iterations = Number.isFinite(iterationsParam) ? iterationsParam : 10000
+  const seed = searchParams.get('seed') || ''
+  const activeResultId = searchParams.get('result')
+
+  function setOffice(v: string) {
+    patchParams({ office: v === 'Prefeito' ? null : v })
+  }
+  function setIterations(v: number) {
+    patchParams({ iter: v === 10000 ? null : String(v) })
+  }
+  function setSeed(v: string) {
+    patchParams({ seed: v.trim() || null })
+  }
+  function setActiveResultId(id: string | null) {
+    patchParams({ result: id })
+  }
+
   const [project, setProject] = useState<PoliticalProject | null>(null)
   const [history, setHistory] = useState<ElectionProbabilitySummary[]>([])
-  const [office, setOffice] = useState('Prefeito')
-  const [iterations, setIterations] = useState<number>(10000)
-  const [seed, setSeed] = useState<string>('')
+  // Rascunhos de candidatos ficam locais (12 fatores × até 10 candidatos
+  // não cabe em URL legível; persistir tudo seria intrusivo). Os campos
+  // de configuração (office/iter/seed/result) já são restauráveis pela URL.
   const [candidates, setCandidates] = useState<DraftCandidate[]>([
     emptyCandidate('Maria 13'),
     emptyCandidate('João 22'),
   ])
   const [submitting, setSubmitting] = useState(false)
-  const [activeResultId, setActiveResultId] = useState<string | null>(null)
   const [activeResult, setActiveResult] = useState<ElectionProbabilityResult | null>(
     null,
   )
@@ -172,8 +205,8 @@ export default function ElectionProbabilityPage() {
         iterations,
         seed: seed.trim() === '' ? null : Number(seed),
       })
-      setActiveResultId(resp.result_id)
       setActiveResult(null)
+      setActiveResultId(resp.result_id)
       // refresh histórico
       electionProbabilityApi.list(projectId).then(setHistory).catch(() => undefined)
     } catch (e) {
