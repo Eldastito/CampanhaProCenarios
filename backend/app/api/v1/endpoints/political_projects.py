@@ -29,6 +29,12 @@ from app.schemas.political import (
 router = APIRouter()
 
 
+# Limite MVP definido no PRD v2 §4: cada organização pode manter no máximo
+# 10 campanhas simultâneas (DISTINCT campaign_id). Múltiplos projetos da
+# mesma campanha não consomem slots adicionais.
+MVP_CAMPAIGN_LIMIT_PER_ORG = 10
+
+
 def _audit(
     db: Session,
     *,
@@ -80,9 +86,28 @@ def create_project(
         )
 
     repo = PoliticalProjectRepository(db)
+
+    # Quota MVP: bloqueia se a organização já atingiu o limite e o
+    # campaign_id solicitado é uma campanha nova. Reuso de campaign_id
+    # existente (criar um segundo projeto na mesma campanha) é permitido.
+    project_id = str(uuid4())
+    campaign_id = body.campaign_id or project_id
+    is_new_campaign = not repo.has_campaign(body.organization_id, campaign_id)
+    if is_new_campaign:
+        active = repo.count_distinct_campaigns(body.organization_id)
+        if active >= MVP_CAMPAIGN_LIMIT_PER_ORG:
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail=(
+                    f"Limite MVP de {MVP_CAMPAIGN_LIMIT_PER_ORG} campanhas "
+                    "simultâneas atingido para esta organização."
+                ),
+            )
+
     project = PoliticalProject(
-        id=str(uuid4()),
+        id=project_id,
         organization_id=body.organization_id,
+        campaign_id=campaign_id,
         name=body.name,
         description=body.description,
         election_year=body.election_year,
@@ -108,7 +133,13 @@ def create_project(
         action="political_project.created",
         target_type="political_project",
         target_id=saved.id,
-        payload={"name": saved.name, "office": saved.office, "year": saved.election_year},
+        payload={
+            "name": saved.name,
+            "office": saved.office,
+            "year": saved.election_year,
+            "campaign_id": saved.campaign_id,
+            "new_campaign": is_new_campaign,
+        },
     )
 
     return PoliticalProjectResponse.model_validate(saved)

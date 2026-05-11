@@ -25,6 +25,12 @@ class PoliticalProject(Base):
         nullable=False,
         index=True,
     )
+    # Identificador externo da campanha no CampanhaPro. É a chave de
+    # isolamento exigida pelo PRD v2: snapshots, dossiês, cache de fatores
+    # e relatórios são todos escopados por (organization_id, campaign_id).
+    # Para projetos criados antes do v2 o backfill da migration 0010
+    # define campaign_id = id (1 projeto = 1 campanha histórica).
+    campaign_id: Mapped[str] = mapped_column(String(64), nullable=False, index=True)
     name: Mapped[str] = mapped_column(String(255), nullable=False)
     description: Mapped[str | None] = mapped_column(Text, nullable=True)
 

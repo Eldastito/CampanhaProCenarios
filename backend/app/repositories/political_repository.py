@@ -4,6 +4,7 @@ Concentra operações sobre PoliticalProject (Fase 1) e auxiliares de
 auditoria/alerta usados pelos guardrails (Fase 7).
 """
 
+from sqlalchemy import func
 from sqlalchemy.orm import Session
 
 from app.models.political import (
@@ -55,6 +56,31 @@ class PoliticalProjectRepository:
     def delete(self, project: PoliticalProject) -> None:
         self.db.delete(project)
         self.db.commit()
+
+    def count_distinct_campaigns(self, organization_id: str) -> int:
+        """Conta campanhas distintas (campaign_id) com pelo menos um projeto na organização.
+
+        Usado pela quota MVP (10 campanhas simultâneas / org). Conta DISTINCT
+        em vez de linhas para que múltiplos projetos da mesma campanha não
+        consumam slots adicionais.
+        """
+        return (
+            self.db.query(func.count(func.distinct(PoliticalProject.campaign_id)))
+            .filter(PoliticalProject.organization_id == organization_id)
+            .scalar()
+            or 0
+        )
+
+    def has_campaign(self, organization_id: str, campaign_id: str) -> bool:
+        return (
+            self.db.query(PoliticalProject.id)
+            .filter(
+                PoliticalProject.organization_id == organization_id,
+                PoliticalProject.campaign_id == campaign_id,
+            )
+            .first()
+            is not None
+        )
 
 
 class PoliticalEvidenceRepository:
