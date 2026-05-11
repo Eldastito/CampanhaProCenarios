@@ -12,6 +12,7 @@ from app.models.political import (
 )
 from app.models.prediction import Prediction
 from app.models.scenario import Scenario, ScenarioRun
+from app.models.scenario_orchestrator import ScenarioOrchestratorCall
 from app.models.user import User
 
 __all__ = [
@@ -29,6 +30,7 @@ __all__ = [
     "PoliticalProject",
     "Prediction",
     "Scenario",
+    "ScenarioOrchestratorCall",
     "ScenarioRun",
     "User",
 ]

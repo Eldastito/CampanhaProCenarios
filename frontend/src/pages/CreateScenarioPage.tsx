@@ -178,6 +178,27 @@ export default function CreateScenarioPage() {
           </div>
         </div>
 
+        {/* IA hint — atalho para o Claude Managed (cenários eleitorais). */}
+        {scenarioType === 'electoral' && selectedProjectId && (
+          <div className="bg-indigo-50 border border-indigo-200 rounded-xl p-4 mb-6 flex items-start justify-between gap-3">
+            <div>
+              <h3 className="text-sm font-semibold text-indigo-900">
+                Prefere descrever em PT-BR e deixar a IA gerar?
+              </h3>
+              <p className="text-xs text-indigo-800 mt-1">
+                A Claude Managed lê o contexto do projeto (fatores reais, dossiês) e
+                escreve o cenário pra você, com análise multi-agent opcional.
+              </p>
+            </div>
+            <a
+              href={`/political/projects/${selectedProjectId}/scenarios/generate`}
+              className="shrink-0 px-3 py-2 text-xs rounded-lg bg-indigo-600 text-white hover:bg-indigo-700"
+            >
+              🪄 Gerar com IA
+            </a>
+          </div>
+        )}
+
         {/* Import from CampanhaPro — visível apenas para cenários eleitorais */}
         {scenarioType === 'electoral' && (
           <div className="bg-white rounded-xl border border-gray-200 p-6 mb-6">
