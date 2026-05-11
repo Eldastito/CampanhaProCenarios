@@ -8,7 +8,7 @@ from uuid import uuid4
 from sqlalchemy.orm import Session
 
 from app.core.config import settings
-from app.models.graph import GraphEdge, GraphNode, GraphProject, Simulation, SimulationStep
+from app.models.graph import GraphEdge, GraphNode, GraphProject
 
 logger = logging.getLogger(__name__)
 
