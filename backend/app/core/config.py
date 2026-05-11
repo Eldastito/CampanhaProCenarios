@@ -73,6 +73,12 @@ class Settings(BaseSettings):
     anthropic_api_key: str | None = Field(default=None, alias="ANTHROPIC_API_KEY")
     anthropic_model: str = Field(default="claude-haiku-4-5-20251001", alias="ANTHROPIC_MODEL")
 
+    # TSE Open Data (público, sem chave) — usado pelo dossiê na Fase 3.
+    tse_api_base_url: str = Field(
+        default="https://dadosabertos.tse.jus.br/api",
+        alias="TSE_API_BASE_URL",
+    )
+
     # CampanhaPro server-to-server secret (X-CampanhaPro-Secret header)
     campanhapro_ingest_shared_secret: str = Field(
         default="dev-campanhapro-secret",

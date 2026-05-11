@@ -1,4 +1,5 @@
 from app.models.campanhapro_ingest import CampanhaProEvent, CampanhaProSnapshot
+from app.models.dossier import CandidateDossier, DossierSocialSnapshot
 from app.models.factor_cache import CampanhaProFactorCache
 from app.models.organization import Organization
 from app.models.political import (
@@ -16,6 +17,8 @@ __all__ = [
     "CampanhaProEvent",
     "CampanhaProFactorCache",
     "CampanhaProSnapshot",
+    "CandidateDossier",
+    "DossierSocialSnapshot",
     "Organization",
     "PoliticalAgentProfile",
     "PoliticalAuditLog",

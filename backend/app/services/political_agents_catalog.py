@@ -23,6 +23,12 @@ class FixedSpecialistSpec:
     biases_declared: tuple[str, ...]
     limitations: tuple[str, ...]
     confidence_level: str  # low | medium | high
+    # Ferramentas acessíveis a este especialista quando consultado pelo Chat
+    # ou pelo orquestrador da Fase 6. Default vazio para não alterar o
+    # comportamento dos agentes existentes. PRD v2 / Fase 3a:
+    # ``dossier_lookup`` lê CandidateDossier; ``web_search`` aciona o
+    # Claude com a tool web search nativa.
+    tools_available: tuple[str, ...] = ()
 
 
 _BASE_GUARDRAILS = (
@@ -137,6 +143,7 @@ FIXED_SPECIALISTS: tuple[FixedSpecialistSpec, ...] = (
             "Não simula crises de redes sociais virais imprevisíveis.",
         ),
         confidence_level="medium",
+        tools_available=("dossier_lookup", "web_search"),
     ),
     FixedSpecialistSpec(
         role="Território / Campo",
@@ -212,6 +219,7 @@ FIXED_SPECIALISTS: tuple[FixedSpecialistSpec, ...] = (
             "Subestima valor de transparência total em alguns cenários.",
         ),
         confidence_level="medium",
+        tools_available=("dossier_lookup", "web_search"),
     ),
     FixedSpecialistSpec(
         role="Estratégia",
@@ -308,6 +316,7 @@ FIXED_SPECIALISTS: tuple[FixedSpecialistSpec, ...] = (
             "Sem acesso a planejamento interno de outras campanhas.",
         ),
         confidence_level="medium",
+        tools_available=("dossier_lookup", "web_search"),
     ),
     FixedSpecialistSpec(
         role="Pauta Local / Agenda",
