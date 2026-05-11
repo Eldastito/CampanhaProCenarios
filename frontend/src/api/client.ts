@@ -996,6 +996,79 @@ export interface ReportRequestBody {
   context?: Record<string, unknown>
 }
 
+// ---------------------------------------------------------------------------
+// Claude Managed — Scenario Orchestrator (Fase 6 PRD v2)
+// ---------------------------------------------------------------------------
+
+export interface ScenarioOrchestratorAgentAnalysis {
+  agent_role: string
+  agent_synthetic_name: string | null
+  category: string | null
+  confidence_level: string | null
+  analysis: string | null
+  status: string
+}
+
+export interface ScenarioOrchestratorCall {
+  id: string
+  organization_id: string
+  political_project_id: string
+  requested_by: string | null
+  prompt: string
+  agents_consulted: string[]
+  scenario_id: string | null
+  scenario_payload: {
+    name?: string
+    description?: string
+    baseline_inputs?: Record<string, number>
+    alternative_inputs?: Record<string, number>
+  }
+  agents_analyses: ScenarioOrchestratorAgentAnalysis[]
+  rationale: string | null
+  llm_model_used: string | null
+  status: string
+  error_message: string | null
+  created_at: string
+}
+
+export interface AvailableAgent {
+  role: string
+  category: string
+  synthetic_name: string
+  biography: string
+  biases_declared: string[]
+  limitations: string[]
+  confidence_level: string
+  tools_available: string[]
+}
+
+export interface RateLimitInfo {
+  limit_per_hour: number
+  used_last_hour: number
+  remaining: number
+}
+
+export const scenarioOrchestratorApi = {
+  listAgents: (projectId: string) =>
+    request<AvailableAgent[]>(
+      `/political/projects/${projectId}/scenarios/agents`,
+    ),
+
+  getRateLimit: (projectId: string) =>
+    request<RateLimitInfo>(`/political/projects/${projectId}/scenarios/rate-limit`),
+
+  generate: (projectId: string, body: { prompt: string; agents_to_consult: string[] }) =>
+    request<ScenarioOrchestratorCall>(
+      `/political/projects/${projectId}/scenarios/generate`,
+      { method: 'POST', body: JSON.stringify(body) },
+    ),
+
+  list: (projectId: string) =>
+    request<ScenarioOrchestratorCall[]>(`/political/projects/${projectId}/scenarios`),
+}
+
+// ---------------------------------------------------------------------------
+
 export const reportsApi = {
   /**
    * Faz POST esperando blob binário (PDF ou DOCX). Lança Error com a mensagem

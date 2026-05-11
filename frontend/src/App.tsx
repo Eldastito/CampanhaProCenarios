@@ -22,6 +22,7 @@ import DossiersPage from './pages/DossiersPage'
 import DossierDetailPage from './pages/DossierDetailPage'
 import ElectionProbabilityPage from './pages/ElectionProbabilityPage'
 import ExecutiveDashboardPage from './pages/ExecutiveDashboardPage'
+import ScenarioGeneratorPage from './pages/ScenarioGeneratorPage'
 
 export default function App() {
   return (
@@ -51,6 +52,10 @@ export default function App() {
             <Route
               path="/political/projects/:projectId/dashboard"
               element={<ExecutiveDashboardPage />}
+            />
+            <Route
+              path="/political/projects/:projectId/scenarios/generate"
+              element={<ScenarioGeneratorPage />}
             />
             <Route path="/scenarios/new" element={<CreateScenarioPage />} />
             <Route path="/scenarios/:id" element={<ScenarioDetailPage />} />

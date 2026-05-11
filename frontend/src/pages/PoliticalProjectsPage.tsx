@@ -215,6 +215,12 @@ function ProjectCard({ project }: { project: PoliticalProject }) {
         >
           📊 Dashboard
         </Link>
+        <Link
+          to={`/political/projects/${project.id}/scenarios/generate`}
+          className="text-xs text-brand-700 hover:underline"
+        >
+          🪄 Gerar cenário (IA)
+        </Link>
       </div>
     </div>
   )
