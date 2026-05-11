@@ -39,3 +39,9 @@ class CampanhaProSnapshot(Base):
     payload_version: Mapped[str] = mapped_column(String(20), nullable=False)
     payload: Mapped[dict] = mapped_column(JSON, nullable=False)
     received_at: Mapped[datetime] = mapped_column(DateTime, nullable=False, default=utc_now_naive)
+
+    # PRD v2 / Fase 1 — contrato `campanhapro.snapshot.v1`.
+    # Ambos nullable para preservar registros legados (v0 sem schemaVersion).
+    # A Fase 2 só processa snapshots com campaign_id presente.
+    campaign_id: Mapped[str | None] = mapped_column(String(64), nullable=True, index=True)
+    schema_version: Mapped[str | None] = mapped_column(String(64), nullable=True)
